@@ -31,7 +31,7 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       text     = args.shift
       
       template.capture_haml do
-        template.haml_tag(:li, :id => _li_id(attribute)) do
+        template.haml_tag(:li, :id => _li_id(attribute), :class => input) do
           # check boxes should have their label and input tag in the reverse
           # order
           if input != :check_box
@@ -49,7 +49,7 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   BUTTONS.each do |button|
     define_method button do |text, options = {}|
       template.capture_haml do
-        template.haml_tag(:li, :id => nil) do
+        template.haml_tag(:li, :class => button) do
           template.haml_concat super(text, options)
         end
       end
