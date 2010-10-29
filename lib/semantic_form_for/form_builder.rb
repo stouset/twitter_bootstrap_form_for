@@ -6,14 +6,16 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   attr_reader :object_name
   
   FIELDSETS = [ :inputs, :buttons ]
+  
   INPUTS    = [ :check_box,    :email_field,    :file_field,   :hidden_field,
                 :number_field, :password_field, :radio_button, :range_field,
                 :search_field, :select,         :text_area,    :text_field,
                 :url_field ]
+                
   BUTTONS   = [ :image_submit, :submit ]
   
   FIELDSETS.each do |set|
-    define_method set do |text, &block|
+    define_method set do |text = nil, &block|
       template.capture_haml do
         template.haml_tag :fieldset, :class => set do
           template.haml_tag(:legend, text) if text
