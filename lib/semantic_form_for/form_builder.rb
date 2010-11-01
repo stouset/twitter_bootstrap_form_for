@@ -29,17 +29,23 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     define_method input do |attribute, *args|
       options  = args.extract_options!
       text     = args.shift
+      error    = self.object.errors[attribute].try(:join, ', ')
+      
+      classes  = [ input ]
+      classes << 'error' if error.present?
       
       template.capture_haml do
-        template.haml_tag(:li, :id => _li_id(attribute), :class => input) do
+        template.haml_tag(:li, :id => _li_id(attribute), :class => classes) do
           # check boxes should have their label and input tag in the reverse
           # order
           if input != :check_box
             template.haml_concat self.label(attribute, text)
+            template.haml_tag    :p, error if error.present?
             template.haml_concat super(attribute, options)
           else
             template.haml_concat super(attribute, options)
             template.haml_concat self.label(attribute, text)
+            template.haml_tag    :p, error if error.present?
           end
         end
       end
@@ -51,24 +57,6 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       template.capture_haml do
         template.haml_tag(:li, :class => button) do
           template.haml_concat super(text, options)
-        end
-      end
-    end
-  end
-  
-  def errors(message = nil, &block)
-    if object.errors.any?
-      template.capture_haml do
-        template.haml_tag(:div, :class => 'errors') do
-          template.haml_tag(:p, message) unless message.blank?
-          template.haml_tag(:ul) do
-            self.object.errors.each do |attribute, message|
-              template.haml_tag :li, case block_given?
-                when true then yield(attribute, message)
-                else           [ attribute, message ].join(' ')
-              end
-            end
-          end
         end
       end
     end
