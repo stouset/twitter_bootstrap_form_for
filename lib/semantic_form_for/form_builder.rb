@@ -56,6 +56,24 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end
   end
   
+  def errors(message = nil, &block)
+    if object.errors.any?
+      template.capture_haml do
+        template.haml_tag(:div, :class => 'errors') do
+          template.haml_tag(:p, message) unless message.blank?
+          template.haml_tag(:ul) do
+            self.object.errors.each do |attribute, message|
+              template.haml_tag :li, case block_given?
+                when true then yield(attribute, message)
+                else           [ attribute, message ].join(' ')
+              end
+            end
+          end
+        end
+      end
+    end
+  end
+  
   private
   
   def _object_name
