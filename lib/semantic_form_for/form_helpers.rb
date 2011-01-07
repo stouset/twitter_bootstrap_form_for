@@ -1,7 +1,7 @@
 require 'semantic_form_for'
 
 module SemanticFormFor::FormHelpers
-  [:form_for, :field_for, :remote_form_for].each do |method|
+  [:form_for, :fields_for, :remote_form_for].each do |method|
     module_eval do
       define_method "semantic_#{method}" do |record, *args, &block|
         options = args.extract_options!
