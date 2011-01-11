@@ -55,10 +55,10 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
   
   BUTTONS.each do |button|
-    define_method button do |text, options = {}|
+    define_method button do |*args|
       template.capture_haml do
         template.haml_tag(:li, :class => button) do
-          template.haml_concat super(text, options)
+          template.haml_concat super(*args)
         end
       end
     end
