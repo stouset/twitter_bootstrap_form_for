@@ -1,6 +1,8 @@
 require 'semantic_form_for'
 
 class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
+  include SemanticFormFor::FormHelpers
+  
   attr_reader :template
   attr_reader :object
   attr_reader :object_name
