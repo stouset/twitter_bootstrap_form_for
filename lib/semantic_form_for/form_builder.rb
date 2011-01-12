@@ -38,16 +38,17 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       
       template.capture_haml do
         template.haml_tag(:li, :id => _li_id(attribute), :class => classes) do
-          # check boxes should have their label and input tag in the reverse
-          # order
-          if input != :check_box
-            template.haml_concat self.label(attribute, text)
-            template.haml_tag    :p, error if error.present?
-            template.haml_concat super(attribute, options)
-          else
-            template.haml_concat super(attribute, options)
-            template.haml_concat self.label(attribute, text)
-            template.haml_tag    :p, error if error.present?
+          case input
+            when :hidden_field then
+              template.haml_concat super(attribute, options)
+            when :check_box then
+              template.haml_concat super(attribute, options)
+              template.haml_concat self.label(attribute, text)
+              template.haml_tag    :p, error if error.present?
+            else
+              template.haml_concat self.label(attribute, text)
+              template.haml_tag    :p, error if error.present?
+              template.haml_concat super(attribute, options)
           end
         end
       end
