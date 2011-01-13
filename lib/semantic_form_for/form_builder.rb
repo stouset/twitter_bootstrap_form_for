@@ -44,10 +44,10 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
             when :check_box then
               template.haml_concat super(attribute, options)
               template.haml_concat self.label(attribute, text)
-              template.haml_tag    :p, error if error.present?
+              template.haml_tag    :span, error if error.present?
             else
               template.haml_concat self.label(attribute, text)
-              template.haml_tag    :p, error if error.present?
+              template.haml_tag    :span, error if error.present?
               template.haml_concat super(attribute, options)
           end
         end
