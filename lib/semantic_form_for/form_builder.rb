@@ -51,6 +51,8 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
               template.haml_tag    :span, error if error.present?
               template.haml_concat super(attribute, options)
           end
+        
+          block.call if block
         end
       end
     end
