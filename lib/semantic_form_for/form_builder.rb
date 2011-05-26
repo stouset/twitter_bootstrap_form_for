@@ -9,12 +9,13 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   
   FIELDSETS = [ :inputs, :buttons ]
   
-  INPUTS    = [ :check_box,    :email_field,    :file_field,   :hidden_field,
-                :number_field, :password_field, :radio_button, :range_field,
-                :search_field, :select,         :text_area,    :text_field,
-                :url_field ]
+  INPUTS = [
+    *ActionView::Helpers::FormBuilder.instance_methods.grep %r{_box$},
+    *ActionView::Helpers::FormBuilder.instance_methods.grep %r{_field$},
+    *ActionView::Helpers::FormBuilder.instance_methods.grep %r{_select$},
+  ]
                 
-  BUTTONS   = [ :image_submit, :submit ]
+  BUTTONS = [ :submit ]
   
   FIELDSETS.each do |set|
     define_method set do |text = nil, &block|
