@@ -33,6 +33,7 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       options  = args.extract_options!
       text     = args.shift
       error    = self.object.errors[attribute].try(:join, ', ')
+      labeled  = text.present? or text.nil?
       
       classes  = [ input ]
       classes << 'error' if error.present?
@@ -44,10 +45,10 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
               template.haml_concat super(attribute, options)
             when :check_box then
               template.haml_concat super(attribute, options)
-              template.haml_concat self.label(attribute, text)
+              template.haml_concat self.label(attribute, text) if labeled
               template.haml_tag    :span, error if error.present?
             else
-              template.haml_concat self.label(attribute, text)
+              template.haml_concat self.label(attribute, text) if labeled
               template.haml_tag    :span, error if error.present?
               template.haml_concat super(attribute, options)
           end
