@@ -29,7 +29,7 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
   
   INPUTS.each do |input|
-    define_method input do |attribute, *args|
+    define_method input do |attribute, *args, &block|
       options  = args.extract_options!
       text     = args.shift
       error    = self.object.errors[attribute].try(:join, ', ')
