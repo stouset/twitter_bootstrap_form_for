@@ -33,7 +33,7 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       options  = args.extract_options!
       text     = args.shift
       error    = self.object.errors[attribute].try(:join, ', ')
-      labeled  = text.present? or text.nil?
+      labeled  = text.present? || text.nil?
       
       classes  = [ input ]
       classes << 'error' if error.present?
