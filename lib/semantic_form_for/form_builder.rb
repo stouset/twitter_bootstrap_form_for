@@ -13,6 +13,7 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_box$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_field$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_select$}),
+    :select
   ]
                 
   BUTTONS = [ :submit ]
