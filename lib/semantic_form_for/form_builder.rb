@@ -10,10 +10,12 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   FIELDSETS = [ :inputs, :buttons ]
   
   INPUTS = [
+    :select,
+    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_area$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_box$}),
+    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_button$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_field$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_select$}),
-    :select
   ]
                 
   BUTTONS = [ :submit ]
