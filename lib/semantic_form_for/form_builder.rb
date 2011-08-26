@@ -32,6 +32,7 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     define_method input do |attribute, *args, &block|
       options  = args.extract_options!
       text     = args.shift
+      args    << options
       error    = self.object.errors[attribute].try(:join, ', ')
       labeled  = text.present? || text.nil?
       
@@ -42,15 +43,15 @@ class SemanticFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         template.haml_tag(:li, :id => _li_id(attribute), :class => classes) do
           case input
             when :hidden_field then
-              template.haml_concat super(attribute, options)
+              template.haml_concat super(attribute, *args)
             when :check_box then
-              template.haml_concat super(attribute, options)
+              template.haml_concat super(attribute, *args)
               template.haml_concat self.label(attribute, text) if labeled
               template.haml_tag    :span, error if error.present?
             else
               template.haml_concat self.label(attribute, text) if labeled
               template.haml_tag    :span, error if error.present?
-              template.haml_concat super(attribute, options)
+              template.haml_concat super(attribute, *args)
           end
         
           block.call if block
