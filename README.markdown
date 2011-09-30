@@ -22,16 +22,16 @@ Syntax
 ======
 
   = twitter_bootstrap_form_for @user do |user|
-    # wraps a section in a fieldset with the provided legend text
+    / wraps a section in a fieldset with the provided legend text
     = user.inputs 'Sign in' do
     
-      # longhand form
+      / longhand form
       = user.input :email do
         = user.label       :email
         = user.email_field :email, :placeholder => 'me@example.com'
         = user.help link_to('Create an account', '#')
       
-      # shorthand form
+      / shorthand form
       = user.labeled_password_field :password, 'Password', link_to('Forgot your password?', '#')
       = user.input_list do
         = user.labeled_check_box, :remember, 'Remember me'
