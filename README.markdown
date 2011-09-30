@@ -26,31 +26,33 @@ Syntax
 
 ```haml
 = twitter_bootstrap_form_for @user do |user|
-
+  
   / wraps a section in a fieldset with the provided legend text
   = user.inputs 'Sign up' do
-
-    / generates an email field with descriptive help text and standard
-    / HTML attributes
-    = user.email_field :email, :placeholder => 'me@example.com' do
-      %span.help-block No account? #{link_to('Sign up!', '#')}
-
-    / generates a password field in a similar manner
+    
+    / generates a standard email field
+    = user.email_field :email, :placeholder => 'me@example.com'
+    
+    / generates a password field with a descriptive aside
     = user.password_field :password do
-      %span.help-block= link_to('Forgot your password?', '#')
-
+      %span.help-block
+        Must be no larger than 6 characters<br/>
+        Must contain only the letters 'x' or 'p'
+    
     / a field with a custom label
     = user.password_field :password_confirmation, 'Confirm Password'
-
+    
     / input fields with custom add-ons
     = user.text_field :twitter_id, 'Twitter', :class => 'medium', :add_on => :prepend do
       %span.add-on @
-
+    
     / lists of checkboxes / radio buttons
     = user.toggles 'Agreements' do
-      = user.check_box :agree, 'I agree to the Terms and Conditions'
+      = user.check_box :agree, 'I agree to the abusive Terms and Conditions'
       = user.check_box :spam,  'I agree to receive all sorts of spam'
-
+      = user.check_box :spammer, 'I agree to let the site spam others through my Twitter account'
+  
+  / wraps buttons in a distinctive style
   = user.actions do
     = user.submit 'Sign up'
     = button_tag 'Cancel', :type => 'reset', :class => 'btn'
