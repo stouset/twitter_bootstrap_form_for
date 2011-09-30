@@ -1,7 +1,7 @@
-Twitter Bootstrap Forms
-=======================
+Twitter Bootstrap Form For
+==========================
 
-twitter_bootstrap_forms is a Rails FormBuilder DSL that, like Formtastic,
+twitter_bootstrap_form_for is a Rails FormBuilder DSL that, like Formtastic,
 makes it easier to create semantically awesome, readily-stylable, and
 wonderfully accessible HTML forms in your Rails applications. It abides by
 the markup expectations of [Twitter Bootstrap], make your forms look great right
