@@ -10,10 +10,14 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   INPUTS = [
     :select,
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_area$}),
-    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_box$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_button$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_field$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_select$}),
+  ]
+  
+  TOGGLES = [
+    :check_box,
+    :radio_button,
   ]
   
   #
@@ -21,12 +25,39 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # +legend+ text.
   #
   def inputs(legend = nil, &block)
+    ActionView::Base.field_error_proc = ActionView::Base.field_error_proc.tap do
+      # this is crazy, but it overrides AR::Base.field_error_proc only in this
+      # scope
+      ActionView::Base.field_error_proc = ->(html_tag, instance) { html_tag }
     
+      template.render(
+        :layout => 'twitter_bootstrap_form_for/inputs',
+        :locals => { :legend => legend },
+        &block
+      )
+    end
+  end
+  
+  def toggles(label = nil, &block)
     template.render(
-      :layout => 'twitter_bootstrap_form_for/inputs',
-      :locals => { :legend => legend },
+      :layout => 'twitter_bootstrap_form_for/toggles',
+      :locals => { :label => label },
       &block
     )
+  end
+  
+  def actions(&block)
+    template.render(
+      :layout => 'twitter_bootstrap_form_for/actions',
+      :locals => { },
+      &block
+    )
+  end
+  
+  def submit(value = nil, options = {})
+    options[:class] = 'btn primary'
+    
+    super value, options
   end
   
   INPUTS.each do |input|
@@ -40,8 +71,24 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           :attribute => attribute,
           # only skip label if it's explicitly false
           :label     => args.first.nil? ? '' : args.shift,
-          :add_on    => options.delete(:add_on)
-        },
+          :add_on    => (options[:add_on] && 'input-' << options.delete(:add_on).to_s),
+          :block     => block
+        }
+      ) { super attribute, *(args << options) }
+    end
+  end
+  
+  TOGGLES.each do |toggle|
+    define_method toggle do |attribute, *args, &block|
+      options = args.extract_options!
+      
+      template.render(
+        :layout => 'twitter_bootstrap_form_for/toggle',
+        :locals => {
+          :form      => self,
+          :attribute => attribute,
+          :label     => args.first.nil? ? '' : args.shift,
+        }
       ) { super attribute, *(args << options) }
     end
   end
@@ -52,8 +99,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     
     template.content_tag(:div, options, &block)
   end
-  
-  protected
   
   def errors_on?(attribute)
     self.object.errors[attribute].present?
