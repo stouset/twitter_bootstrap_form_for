@@ -1,0 +1,15 @@
+= form.div_wrapper attribute, :class => 'clearfix' do
+  = form.label attribute, label if label
+  .input{:class => add_on}
+    = yield
+
+/     %div{:id => input.id, :class => input.classes('clearfix')}
+/       = form.label(input.attribute, input.label) if input.labeled?
+/       .input{:class => input.addon_class}
+/         = input.field
+/         - if input.has_addon?
+/           = input.addon
+/         - if input.has_errors?
+/           %span.help-inline= input.errors
+/         - if input.has_help_text?
+/           %span.help-block= input.help
