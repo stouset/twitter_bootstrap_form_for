@@ -38,6 +38,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end
   end
   
+  #
+  # Wraps groups of toggles (radio buttons, checkboxes) with a single label
+  # and the appropriate markup. All toggle buttons should be rendered
+  # inside of here, and will not look correct unless they are.
+  #
   def toggles(label = nil, &block)
     template.render(
       :layout => 'twitter_bootstrap_form_for/toggles',
@@ -46,6 +51,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     )
   end
   
+  #
+  # Wraps action buttons into their own styled container.
+  #
   def actions(&block)
     template.render(
       :layout => 'twitter_bootstrap_form_for/actions',
@@ -54,8 +62,12 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     )
   end
   
+  #
+  # Renders a submit tag with default classes to style it as a primary form
+  # button.
+  #
   def submit(value = nil, options = {})
-    options[:class] = 'btn primary'
+    options[:class] ||= 'btn primary'
     
     super value, options
   end
