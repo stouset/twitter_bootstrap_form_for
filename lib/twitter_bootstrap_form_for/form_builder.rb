@@ -1,6 +1,8 @@
 require 'twitter_bootstrap_form_for'
 
 class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
+  # TODO: support inline inputs
+  
   include TwitterBootstrapFormFor::FormHelpers
   
   attr_reader :template
