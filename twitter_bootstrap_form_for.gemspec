@@ -1,4 +1,4 @@
-require File.expand_path('../lib/semantic_form_for/version', __FILE__)
+require File.expand_path('../lib/twitter_bootstrap_form_for/version', __FILE__)
 
 Gem::Specification.new do |s|
   s.name        = 'twitter_bootstrap_form_for'
