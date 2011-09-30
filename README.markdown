@@ -14,8 +14,9 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 Dependencies
 ============
 
-None, although it will work best with the styling provided by Twitter
-Bootstrap.
+Nothing but Rails, although it will work best with the stylesheets provided by
+Twitter Bootstrap. Check out the [less-rails-bootstrap] gem for easy
+integration with Rails 3.1 apps.
 
 Syntax
 ======
