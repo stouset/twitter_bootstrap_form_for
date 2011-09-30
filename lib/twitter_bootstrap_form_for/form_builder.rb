@@ -27,17 +27,14 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # +legend+ text.
   #
   def inputs(legend = nil, &block)
-    ActionView::Base.field_error_proc = ActionView::Base.field_error_proc.tap do
-      # this is crazy, but it overrides AR::Base.field_error_proc only in this
-      # scope
-      ActionView::Base.field_error_proc = ->(html_tag, instance) { html_tag }
-    
-      template.render(
-        :layout => 'twitter_bootstrap_form_for/inputs',
-        :locals => { :legend => legend },
-        &block
-      )
-    end
+    # TODO: don't wrap error fields in field_with_error divs
+    # ActionView::Base.field_error_proc = ->(html_tag, instance) { html_tag }
+  
+    template.render(
+      :layout => 'twitter_bootstrap_form_for/inputs',
+      :locals => { :legend => legend },
+      &block
+    )
   end
   
   #
