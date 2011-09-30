@@ -14,9 +14,12 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 Dependencies
 ============
 
-Nothing but Rails, although it will work best with the stylesheets provided by
-Twitter Bootstrap. Check out the [less-rails-bootstrap] gem for easy
-integration with Rails 3.1 apps.
+Besides Rails, Twitter Bootstrap depends on Haml. You don't have to use it
+yourself, but it made the views for this gem far, far cleaner and more
+readable.
+
+I may consider adding a dependency on `less-rails-bootstrap` in the future, to
+tie this plugin to specific releases of Twitter Bootstrap.
 
 Syntax
 ======
@@ -33,9 +36,18 @@ Syntax
       
       / shorthand form
       = user.labeled_password_field :password, 'Password', link_to('Forgot your password?', '#')
-      = user.input_list do
+      = user.input_list 'Selections' do
         = user.labeled_check_box, :remember, 'Remember me'
         = user.labeled_check_box, :agree,    'I agree to the Terms and Conditions'
+      
+      / addon elements
+      = user.labeled_text_field :email, :append => -> do |append|
+        = append.check_box :email_okay, :class => 'active'
+      
+      = user.labeled_text_field :email, :prepend => -> do |prepend|
+        = prepend.span_tag '@', :class => 'active'
+        
+        
 	
 This is equivalent to the following Haml.
 
