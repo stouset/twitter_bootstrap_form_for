@@ -25,37 +25,37 @@ Syntax
 ======
 
   = twitter_bootstrap_form_for @user do |user|
-    / wraps a section in a fieldset with the provided legend text
-    = user.inputs 'Sign in' do
-    
-      / longhand form
-      = user.input :email do
-        = user.label       :email
-        = user.email_field :email, :placeholder => 'me@example.com'
-        = user.help link_to('Create an account', '#')
-      
-      / shorthand form
-      = user.labeled_password_field :password, 'Password', link_to('Forgot your password?', '#')
-      = user.input_list 'Selections' do
-        = user.labeled_check_box, :remember, 'Remember me'
-        = user.labeled_check_box, :agree,    'I agree to the Terms and Conditions'
-      
-      / addon elements
-      = user.labeled_text_field :email, :append => -> do |append|
-        = append.check_box :email_okay, :class => 'active'
-      
-      = user.labeled_text_field :email, :prepend => -> do |prepend|
-        = prepend.span_tag '@', :class => 'active'
-        
-        
-	
-This is equivalent to the following Haml.
 
-  # TODO
+    / wraps a section in a fieldset with the provided legend text
+    = user.inputs 'Sign up' do
+  
+      / generates an email field with descriptive help text and standard
+      / HTML attributes
+      = user.email_field :email, :placeholder => 'me@example.com' do
+        %span.help-block No account? #{link_to('Sign up!', '#')}
+    
+      / generates a password field in a similar manner
+      = user.password_field :password do
+        %span.help-block= link_to('Forgot your password?', '#')
+
+      / a field with a custom label
+      = user.password_field :password_confirmation, 'Confirm Password'
+    
+      / input fields with custom add-ons
+      = user.text_field :twitter_id, 'Twitter', :class => 'medium', :add_on => :prepend do
+        %span.add-on @
+    
+      / lists of checkboxes / radio buttons
+      = user.toggles 'Agreements' do
+        = user.check_box :agree, 'I agree to the Terms and Conditions'
+        = user.check_box :spam,  'I agree to receive all sorts of spam'
+  
+    = user.actions do
+      = user.submit 'Sign up'
+      = button_tag 'Cancel', :type => 'reset', :class => 'btn'
 
 That's it. All of the Rails field helpers you know and love work just like
-their normal FormBuilder counterparts, but they have enhanced versions that
-wrap them in labels, handle error and help text automatically, and wrap
-everything in the markup that Twitter Bootstrap expects.
+their normal FormBuilder counterparts, but with minor extensions to expose
+the functionality anticipated by Twitter Bootstrap.
 
 [Twitter Bootstrap]: http://twitter.github.com/bootstrap/
