@@ -58,6 +58,10 @@ Syntax
     = button_tag 'Cancel', :type => 'reset', :class => 'btn'
 ```
 
+That code produces the following output, with no custom stylesheets.
+
+![](https://github.com/stouset/twitter_bootstrap_form_for/raw/master/examples/screenshot.png)
+
 That's it. All of the Rails field helpers you know and love work just like
 their normal FormBuilder counterparts, but with minor extensions to expose
 the functionality anticipated by Twitter Bootstrap.
