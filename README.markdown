@@ -48,8 +48,8 @@ Syntax
     
     / lists of checkboxes / radio buttons
     = user.toggles 'Agreements' do
-      = user.check_box :agree, 'I agree to the abusive Terms and Conditions'
-      = user.check_box :spam,  'I agree to receive all sorts of spam'
+      = user.check_box :agree,   'I agree to the abusive Terms and Conditions'
+      = user.check_box :spam,    'I agree to receive all sorts of spam'
       = user.check_box :spammer, 'I agree to let the site spam others through my Twitter account'
   
   / wraps buttons in a distinctive style
