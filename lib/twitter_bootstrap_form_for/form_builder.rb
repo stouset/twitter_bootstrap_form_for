@@ -95,6 +95,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           :form      => self,
           :attribute => attribute,
           :label     => args.first.nil? ? '' : args.shift,
+          :id        => self.object_name.to_s + '_' + attribute.to_s,
         }
       ) { super attribute, *(args << options) }
     end
