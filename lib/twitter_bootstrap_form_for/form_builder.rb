@@ -29,12 +29,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   def inputs(legend = nil, &block)
     # TODO: don't wrap error fields in field_with_error divs
     # ActionView::Base.field_error_proc = ->(html_tag, instance) { html_tag }
-  
-    template.render(
-      :layout => 'twitter_bootstrap_form_for/inputs',
-      :locals => { :legend => legend },
-      &block
-    )
+    template.content_tag(:fieldset) do
+      template.concat template.content_tag(:legend, legend) unless legend.nil?
+      block.call
+    end
   end
   
   #
@@ -43,11 +41,13 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # inside of here, and will not look correct unless they are.
   #
   def toggles(label = nil, &block)
-    template.render(
-      :layout => 'twitter_bootstrap_form_for/toggles',
-      :locals => { :label => label },
-      &block
-    )
+
+    template.content_tag(:div, :class => "clearfix") do
+      template.concat template.content_tag(:label, label)
+      template.concat(template.content_tag(:div, :class => "input") {
+        template.content_tag(:ul, :class => "inputs-list") { block.call }
+      })
+    end
   end
   
   #
@@ -70,34 +70,34 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
       options = args.extract_options!
+
+      field_label = args.first.nil? ? '' : args.shift
+
+      self.div_wrapper(attribute, :class => 'clearfix') do
+        template.concat self.label(attribute, field_label) if field_label
+        template.concat (template.content_tag(:div, :class => "input#{(options[:add_on] && ' input-' << options.delete(:add_on).to_s)}") {
+          template.concat (super attribute, *(args << options))
+          template.concat template.content_tag(:span, self.errors_for(attribute), :class => "help-inline") if self.errors_on?(attribute)
+          block.call if block.present?
+        })
+      end
       
-      template.render(
-        :layout => 'twitter_bootstrap_form_for/input',
-        :locals => {
-          :form      => self,
-          :attribute => attribute,
-          # only skip label if it's explicitly false
-          :label     => args.first.nil? ? '' : args.shift,
-          :add_on    => (options[:add_on] && 'input-' << options.delete(:add_on).to_s),
-          :block     => block
-        }
-      ) { super attribute, *(args << options) }
     end
   end
   
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
       options = args.extract_options!
+
+      checkbox_label = args.first.nil? ? '' : args.shift
+
+      template.content_tag(:li) do
+        template.concat(template.content_tag(:label, :for => self.object_name.to_s + '_' + attribute.to_s) {
+          template.concat (super attribute, *(args << options))
+          template.concat template.content_tag(:span, checkbox_label)
+        })
+      end
       
-      template.render(
-        :layout => 'twitter_bootstrap_form_for/toggle',
-        :locals => {
-          :form      => self,
-          :attribute => attribute,
-          :label     => args.first.nil? ? '' : args.shift,
-          :id        => self.object_name.to_s + '_' + attribute.to_s,
-        }
-      ) { super attribute, *(args << options) }
     end
   end
   
