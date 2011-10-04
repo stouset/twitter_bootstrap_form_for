@@ -15,7 +15,6 @@ Gem::Specification.new do |s|
   s.require_path = 'lib'
 
   s.add_dependency 'rails', '~> 3'
-  s.add_dependency 'haml',  '~> 3'
   # TODO: uncomment the next line
   #  s.add_dependency 'twitter-bootstrap', '~> 1.3'
 end

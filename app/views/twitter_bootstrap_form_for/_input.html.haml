@@ -1,6 +1,0 @@
-= form.div_wrapper attribute, :class => 'clearfix' do
-  = form.label attribute, label if label
-  .input{:class => add_on}
-    = yield
-    %span.help-inline= form.errors_for(attribute) if form.errors_on?(attribute)
-    = capture &block if block.present?
