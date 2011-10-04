@@ -11,16 +11,14 @@ However, it also tries not to do too much. Rather than try to guess at input
 types and provide an exhaustive set of options for each tag helper (as
 Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 
-Dependencies
-============
+## Dependencies ##
 
 Just Rails. But you were going to use that anyway, weren't you?
 
 I may consider adding a dependency on `less-rails-bootstrap` in the future, to
 tie this plugin to specific releases of Twitter Bootstrap.
 
-Syntax
-======
+## Syntax ##
 
 ```haml
 = twitter_bootstrap_form_for @user do |user|
