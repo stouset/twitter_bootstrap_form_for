@@ -41,12 +41,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # inside of here, and will not look correct unless they are.
   #
   def toggles(label = nil, &block)
-
     template.content_tag(:div, :class => "clearfix") do
       template.concat template.content_tag(:label, label)
-      template.concat(template.content_tag(:div, :class => "input") {
+      template.concat template.content_tag(:div, :class => "input") {
         template.content_tag(:ul, :class => "inputs-list") { block.call }
-      })
+      }
     end
   end
   
@@ -69,35 +68,34 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
-      options = args.extract_options!
-
-      field_label = args.first.nil? ? '' : args.shift
-
-      self.div_wrapper(attribute, :class => 'clearfix') do
-        template.concat self.label(attribute, field_label) if field_label
-        template.concat (template.content_tag(:div, :class => "input#{(options[:add_on] && ' input-' << options.delete(:add_on).to_s)}") {
-          template.concat (super attribute, *(args << options))
-          template.concat template.content_tag(:span, self.errors_for(attribute), :class => "help-inline") if self.errors_on?(attribute)
-          block.call if block.present?
-        })
-      end
+      options  = args.extract_options!
+      label    = args.first.nil? ? '' : args.shift
+      classes  = [ 'input' ]
+      classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
       
+      self.div_wrapper(attribute, :class => 'clearfix') do
+        template.concat self.label(attribute, label) if label
+        template.concat template.content_tag(:div, :class => classes.join(' ')) {
+          template.concat super(attribute, *(args << options))
+          template.concat template.content_tag(:span, self.errors_for(attribute), :class => 'help-inline') if self.errors_on?(attribute)
+          block.call if block.present?
+        }
+      end
     end
   end
   
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
       options = args.extract_options!
-
-      checkbox_label = args.first.nil? ? '' : args.shift
-
-      template.content_tag(:li) do
-        template.concat(template.content_tag(:label, :for => self.object_name.to_s + '_' + attribute.to_s) {
-          template.concat (super attribute, *(args << options))
-          template.concat template.content_tag(:span, checkbox_label)
-        })
-      end
+      label   = args.first.nil? ? '' : args.shift
+      target  = self.object_name.to_s + '_' + attribute.to_s
       
+      template.content_tag(:li) do
+        template.concat template.content_tag(:label, :for => target) {
+          template.concat super(attribute, *(args << options))
+          template.concat template.content_tag(:span, label)
+        }
+      end
     end
   end
   
