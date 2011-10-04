@@ -93,6 +93,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       template.content_tag(:li) do
         template.concat template.content_tag(:label, :for => target) {
           template.concat super(attribute, *(args << options))
+          template.concat ' ' # give the input and span some room
           template.concat template.content_tag(:span, label)
         }
       end
