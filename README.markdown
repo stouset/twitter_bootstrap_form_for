@@ -51,7 +51,7 @@ tie this plugin to specific releases of Twitter Bootstrap.
   / wraps buttons in a distinctive style
   = user.actions do
     = user.submit 'Sign up'
-    = button_tag 'Cancel', :type => 'reset', :class => 'btn'
+    = button_tag  'Cancel', :type => 'reset', :class => 'btn'
 ```
 
 That code produces the following output, with no custom stylesheets.
