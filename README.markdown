@@ -14,9 +14,7 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 Dependencies
 ============
 
-Besides Rails, Twitter Bootstrap depends on Haml. You don't have to use it
-yourself, but it made the views for this gem far, far cleaner and more
-readable.
+Just Rails. But you were going to use that anyway, weren't you?
 
 I may consider adding a dependency on `less-rails-bootstrap` in the future, to
 tie this plugin to specific releases of Twitter Bootstrap.
