@@ -62,4 +62,9 @@ That's it. All of the Rails field helpers you know and love work just like
 their normal FormBuilder counterparts, but with minor extensions to expose
 the functionality anticipated by Twitter Bootstrap.
 
+## Known Bugs ##
+
+  - inline fields are not yet supported ([issue #2])
+
 [Twitter Bootstrap]: http://twitter.github.com/bootstrap/
+[issue #2]:          https://github.com/stouset/twitter_bootstrap_form_for/issues/2
