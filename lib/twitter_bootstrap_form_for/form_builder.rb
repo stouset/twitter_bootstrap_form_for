@@ -17,6 +17,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_select$}),
   ]
   
+  INPUTS.delete(:hidden_field)
+  
   TOGGLES = [
     :check_box,
     :radio_button,
