@@ -12,7 +12,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   INPUTS = [
     :select,
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_area$}),
-    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_button$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_field$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_select$}),
   ]
