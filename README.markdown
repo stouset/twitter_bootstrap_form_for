@@ -15,9 +15,6 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 
 Just Rails. But you were going to use that anyway, weren't you?
 
-I may consider adding a dependency on `less-rails-bootstrap` in the future, to
-tie this plugin to specific releases of Twitter Bootstrap.
-
 ## Syntax ##
 
 ```haml
