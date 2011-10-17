@@ -1,8 +1,12 @@
 Twitter Bootstrap Form For Changes
 ==================================
 
+## 1.0.2 (unreleased) ##
+  - added compatibility with non-ActiveModel objects
+  - demonstrated use of radio buttons in the README
+
 ## 1.0.1 (2011-10-06) ##
-  - hidden_field tags are no accidentally marked-up (issue #5)
+  - hidden_field tags are no longer accidentally marked-up (issue #5)
 
 ## 1.0.0 (2011-10-04) ##
   - added a changelog
