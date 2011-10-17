@@ -113,7 +113,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
   
   def errors_on?(attribute)
-    self.object.errors[attribute].present?
+    self.object.errors[attribute].present? if self.object.respond_to?(:errors)
   end
   
   def errors_for(attribute)
