@@ -7,7 +7,7 @@ module TwitterBootstrapFormFor::FormHelpers
         # add the TwitterBootstrap builder to the options
         options           = args.extract_options!
         options[:builder] = TwitterBootstrapFormFor::FormBuilder
-        
+
         # call the original method with our overridden options
         send method, record, *(args << options), &block
       end
