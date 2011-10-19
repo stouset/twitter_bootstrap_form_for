@@ -78,11 +78,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       classes  = [ 'input' ]
       classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
 
-      self.div_wrapper(attribute, :class => 'clearfix') do
+      self.div_wrapper(attribute) do
         template.concat self.label(attribute, label) if label
         template.concat template.content_tag(:div, :class => classes.join(' ')) {
           template.concat super(attribute, *(args << options))
-          template.concat template.content_tag(:span, self.errors_for(attribute), :class => 'help-inline') if self.errors_on?(attribute)
+          template.concat error_span(attribute)
           block.call if block.present?
         }
       end
@@ -105,11 +105,25 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end
   end
 
+  #
+  # Wraps the contents of +block+ inside a +tag+ with an appropriate class and
+  # id for the object's +attribute+. HTML options can be overridden by passing
+  # an +options+ hash.
+  #
   def div_wrapper(attribute, options = {}, &block)
     options[:id]    = _wrapper_id      attribute, options[:id]
-    options[:class] = _wrapper_classes attribute, options[:class]
+    options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
 
-    template.content_tag(:div, options, &block)
+    template.content_tag :div, options, &block
+  end
+
+  def error_span(attribute, options = {})
+    options[:class] ||= 'help-inline'
+
+    template.content_tag(
+      :span, self.errors_for(attribute),
+      :class => options[:class]
+    ) if self.errors_on?(attribute)
   end
 
   def errors_on?(attribute)
@@ -142,7 +156,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   def _wrapper_classes(attribute, *classes)
     classes.tap do |classes|
       classes.push 'error' if self.errors_on?(attribute)
-    end
+    end.join(' ')
   end
 
   def _attribute_name(attribute)
