@@ -10,7 +10,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   attr_reader :object_name
 
   INPUTS = [
-    :select,
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_area$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_field$}),
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_select$}),
@@ -78,13 +77,18 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
       options  = args.extract_options!
+      if options[:skip]
+        options.delete(:skip)
+        return super(attribute, options)
+      end
+
       label    = args.first.nil? ? '' : args.shift
       classes  = [ 'input' ]
       classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
 
       self.div_wrapper(attribute) do
         template.concat self.label(attribute, label) if label
-        template.concat template.content_tag(:div, :class => classes.join(' ')) {
+        template.concat template.content_tag(:div, :class => classes) {
           template.concat super(attribute, *(args << options))
           template.concat error_span(attribute)
           block.call if block.present?
@@ -111,7 +115,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # an +options+ hash.
   #
   def div_wrapper(attribute, options = {}, &block)
-    options[:id]    = _wrapper_id      attribute, options[:id]
     options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
 
     template.content_tag :div, options, &block
@@ -135,18 +138,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
 
   private
-
-  #
-  # Returns an HTML id to uniquely identify the markup around an input field.
-  # If a +default+ is provided, it uses that one instead.
-  #
-  def _wrapper_id(attribute, default = nil)
-    default || [
-      _object_name + _object_index,
-      _attribute_name(attribute),
-      'input'
-     ].join('_')
-  end
 
   #
   # Returns any classes necessary for the wrapper div around fields for
@@ -175,3 +166,4 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end.to_s
   end
 end
+
