@@ -27,12 +27,14 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Wraps the contents of the block passed in a fieldset with optional
   # +legend+ text.
   #
-  def inputs(legend = nil, &block)
+  def inputs(legend = nil, *args, &block)
+    options = args.extract_options!
+
     # stash the old field_error_proc, then override it temporarily
     original_field_error_proc = template.field_error_proc
     template.field_error_proc = ->(html_tag, instance) { html_tag }
 
-    template.content_tag(:fieldset) do
+    template.content_tag(:fieldset, options) do
       template.concat template.content_tag(:legend, legend) unless legend.nil?
       block.call
     end
@@ -45,8 +47,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # and the appropriate markup. All toggle buttons should be rendered
   # inside of here, and will not look correct unless they are.
   #
-  def toggles(label = nil, &block)
-    template.content_tag(:div, :class => "clearfix") do
+  def toggles(label = nil, *args, &block)
+    options = args.extract_options!
+    options[:class] = options.include?(:class) ? options[:class] + ' clearfix' : 'clearfix'
+    template.content_tag(:div, options) do
       template.concat template.content_tag(:label, label)
       template.concat template.content_tag(:div, :class => "input") {
         template.content_tag(:ul, :class => "inputs-list") { block.call }
