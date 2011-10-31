@@ -1,3 +1,5 @@
+require 'action_view'
+
 module TwitterBootstrapFormFor
   autoload :FormBuilder, 'twitter_bootstrap_form_for/form_builder'
   autoload :FormHelpers, 'twitter_bootstrap_form_for/form_helpers'

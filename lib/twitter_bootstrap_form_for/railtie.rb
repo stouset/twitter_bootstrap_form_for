@@ -1,5 +1,5 @@
 require 'twitter_bootstrap_form_for'
-require 'rails'
+require 'rails/railtie'
 
 class TwitterBootstrapFormFor::Railtie < Rails::Railtie
   initializer 'twitter_bootstrap_form_for.initialize',
