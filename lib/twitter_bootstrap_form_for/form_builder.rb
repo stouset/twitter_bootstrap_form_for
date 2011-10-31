@@ -30,7 +30,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   def inputs(legend = nil, &block)
     # stash the old field_error_proc, then override it temporarily
     original_field_error_proc = template.field_error_proc
-    template.field_error_proc = ->(html_tag, instance) { html_tag }
+    template.field_error_proc = lambda {|html_tag, instance| html_tag }
 
     template.content_tag(:fieldset) do
       template.concat template.content_tag(:legend, legend) unless legend.nil?
