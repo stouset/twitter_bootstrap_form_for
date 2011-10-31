@@ -2,6 +2,8 @@ Twitter Bootstrap Form For Changes
 ==================================
 
 ## 1.0.2 (unreleased) ##
+  - dependencies reduced to just `railties` and `actionpack`
+  - 1.8.7 compatibility fixes
   - added compatibility with non-ActiveModel objects
   - demonstrated use of radio buttons in the README
 
