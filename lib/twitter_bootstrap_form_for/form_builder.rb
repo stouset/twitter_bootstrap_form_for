@@ -11,9 +11,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   INPUTS = [
     :select,
-    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_area$}),
-    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_field$}),
-    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_select$}),
+    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{
+      _(area|field|select)$ # all area, field, and select methods
+    }mx)
   ]
 
   INPUTS.delete(:hidden_field)
