@@ -154,8 +154,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # This merges any +classes+ passed in.
   #
   def _wrapper_classes(attribute, *classes)
-    classes.tap do |classes|
-      classes.push 'error' if self.errors_on?(attribute)
+    classes.tap do |klasses|
+      klasses.push 'error' if self.errors_on?(attribute)
     end.join(' ')
   end
 
