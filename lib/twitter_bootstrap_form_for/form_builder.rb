@@ -96,7 +96,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       target  = self.object_name.to_s + '_' + attribute.to_s
 
       template.content_tag(:li) do
-        template.concat template.content_tag(:label, :for => target) {
+        template.concat template.content_tag(:label) {
           template.concat super(attribute, *args)
           template.concat ' ' # give the input and span some room
           template.concat template.content_tag(:span, label)
