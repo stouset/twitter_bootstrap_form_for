@@ -93,7 +93,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
       label   = args.first.nil? ? '' : args.shift
-      target  = self.object_name.to_s + '_' + attribute.to_s
 
       template.content_tag(:li) do
         template.concat template.content_tag(:label) {
