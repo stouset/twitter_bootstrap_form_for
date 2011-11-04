@@ -1,4 +1,5 @@
 require 'twitter_bootstrap_form_for'
+require 'action_view/helpers'
 
 class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # TODO: support inline inputs
@@ -10,9 +11,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   attr_reader :object_name
 
   INPUTS = [
-    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_area$}),
-    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_field$}),
-    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{_select$}),
+    *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{
+      _(area|field|select)$ # all area, field, and select methods
+    }mx)
   ]
 
   INPUTS.delete(:hidden_field)
@@ -31,7 +32,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
     # stash the old field_error_proc, then override it temporarily
     original_field_error_proc = template.field_error_proc
-    template.field_error_proc = ->(html_tag, instance) { html_tag }
+    template.field_error_proc = lambda {|html_tag, instance| html_tag }
 
     template.content_tag(:fieldset, options) do
       template.concat template.content_tag(:legend, legend) unless legend.nil?
@@ -99,12 +100,15 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
-      label_for   = args.first.nil? ? label(attribute) : label(attribute, args.shift)
-      target      = self.object_name.to_s + '_' + attribute.to_s
+      label = args.first.nil? ? '' : args.shift
+      target = self.object_name.to_s + '_' + attribute.to_s
 
       template.content_tag(:li) do
-        template.concat super(attribute, *args)
-        template.concat label_for
+        template.concat template.content_tag(:label, :for => target) {
+          template.concat super(attribute, *args)
+          template.concat ' ' # give the input and span some room
+          template.concat template.content_tag(:span, label)
+        }
       end
     end
   end

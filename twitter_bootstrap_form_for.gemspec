@@ -14,7 +14,6 @@ Gem::Specification.new do |s|
   s.executables  = `git ls-files`.split("\n").map {|f| f =~ /^bin\/(.*)/ ? $1 : nil }.compact
   s.require_path = 'lib'
 
-  s.add_dependency 'rails', '~> 3'
-  # TODO: uncomment the next line
-  #  s.add_dependency 'twitter-bootstrap', '~> 1.3'
+  s.add_dependency 'railties',   '~> 3'
+  s.add_dependency 'actionpack', '~> 3'
 end
