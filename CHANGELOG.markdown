@@ -1,6 +1,9 @@
 Twitter Bootstrap Form For Changes
 ==================================
 
+## 1.0.3 (unreleased) ##
+  - explicitly license as MIT
+
 ## 1.0.2 (2011-10-31) ##
   - dependencies reduced to just `railties` and `actionpack`
   - 1.8.7 compatibility fixes
