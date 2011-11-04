@@ -21,7 +21,7 @@ Just Rails. But you were going to use that anyway, weren't you?
 = twitter_bootstrap_form_for @user do |user|
 
   / wraps a section in a fieldset with the provided legend text
-  = user.inputs 'Sign up' do
+  = user.inputs 'Sign up', :html => {:class => "sign_up"} do
 
     / generates a standard email field
     = user.email_field :email, :placeholder => 'me@example.com'
