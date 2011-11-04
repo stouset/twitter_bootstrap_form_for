@@ -28,12 +28,12 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Wraps the contents of the block passed in a fieldset with optional
   # +legend+ text.
   #
-  def inputs(legend = nil, &block)
+  def inputs(legend = nil, options = {}, &block)
     # stash the old field_error_proc, then override it temporarily
     original_field_error_proc = template.field_error_proc
     template.field_error_proc = lambda {|html_tag, instance| html_tag }
 
-    template.content_tag(:fieldset) do
+    template.content_tag(:fieldset, options[:html]) do
       template.concat template.content_tag(:legend, legend) unless legend.nil?
       block.call
     end
