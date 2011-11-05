@@ -92,11 +92,12 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
-      label   = args.first.nil? ? '' : args.shift
-      target  = self.object_name.to_s + '_' + attribute.to_s
+      label       = args.first.nil? ? '' : args.shift
+      target      = self.object_name.to_s + '_' + attribute.to_s
+      label_attrs = toggle == :check_box ? { :for => target } : {}
 
       template.content_tag(:li) do
-        template.concat template.content_tag(:label, :for => target) {
+        template.concat template.content_tag(:label, label_attrs) {
           template.concat super(attribute, *args)
           template.concat ' ' # give the input and span some room
           template.concat template.content_tag(:span, label)
@@ -154,8 +155,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # This merges any +classes+ passed in.
   #
   def _wrapper_classes(attribute, *classes)
-    classes.tap do |classes|
-      classes.push 'error' if self.errors_on?(attribute)
+    classes.tap do |klasses|
+      klasses.push 'error' if self.errors_on?(attribute)
     end.join(' ')
   end
 
