@@ -2,7 +2,9 @@ Twitter Bootstrap Form For Changes
 ==================================
 
 ## 1.0.3 (unreleased) ##
-  - explicitly license as MIT
+  - produce correct labels for radio buttons (closes #16)
+  - add support for HTML options to #inputs (closes #18)
+  - explicitly license as MIT (closes #17)
 
 ## 1.0.2 (2011-10-31) ##
   - dependencies reduced to just `railties` and `actionpack`
