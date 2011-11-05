@@ -33,7 +33,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     original_field_error_proc = template.field_error_proc
     template.field_error_proc = lambda {|html_tag, instance| html_tag }
 
-    template.content_tag(:fieldset, options[:html]) do
+    template.content_tag(:fieldset, options) do
       template.concat template.content_tag(:legend, legend) unless legend.nil?
       block.call
     end
