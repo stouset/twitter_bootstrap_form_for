@@ -12,7 +12,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     :select,
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{
       _(area|field|select)$ # all area, field, and select methods
-    }mx)
+    }mx).map(&:to_sym)
   ]
 
   INPUTS.delete(:hidden_field)
