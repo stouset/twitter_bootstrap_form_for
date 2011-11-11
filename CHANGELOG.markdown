@@ -1,7 +1,7 @@
 Twitter Bootstrap Form For Changes
 ==================================
 
-## 1.0.3 (unreleased) ##
+## 1.0.3 (2011-11-11) ##
   - ruby 1.8 compatibility for hidden fields (closes [\#20])
   - produce correct labels for radio buttons (closes [\#16])
   - add support for HTML options to #inputs (closes [\#18])
