@@ -2,8 +2,6 @@ require 'twitter_bootstrap_form_for'
 require 'action_view/helpers'
 
 class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
-  # TODO: support inline inputs
-
   include TwitterBootstrapFormFor::FormHelpers
 
   attr_reader :template
@@ -13,7 +11,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   INPUTS = [
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{
       _(area|field|select)$ # all area, field, and select methods
-    }mx)
+    }mx).map(&:to_sym)
   ]
 
   INPUTS.delete(:hidden_field)
@@ -27,9 +25,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Wraps the contents of the block passed in a fieldset with optional
   # +legend+ text.
   #
-  def inputs(legend = nil, *args, &block)
-    options = args.extract_options!
-
+  def inputs(legend = nil, options = {}, &block)
     # stash the old field_error_proc, then override it temporarily
     original_field_error_proc = template.field_error_proc
     template.field_error_proc = lambda {|html_tag, instance| html_tag }
@@ -100,11 +96,12 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
-      label = args.first.nil? ? '' : args.shift
-      target = self.object_name.to_s + '_' + attribute.to_s
+      label       = args.first.nil? ? '' : args.shift
+      target      = self.object_name.to_s + '_' + attribute.to_s
+      label_attrs = toggle == :check_box ? { :for => target } : {}
 
       template.content_tag(:li) do
-        template.concat template.content_tag(:label, :for => target) {
+        template.concat template.content_tag(:label, label_attrs) {
           template.concat super(attribute, *args)
           template.concat ' ' # give the input and span some room
           template.concat template.content_tag(:span, label)
@@ -112,6 +109,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       end
     end
   end
+
+  protected
 
   #
   # Wraps the contents of +block+ inside a +tag+ with an appropriate class and
@@ -149,8 +148,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # This merges any +classes+ passed in.
   #
   def _wrapper_classes(attribute, *classes)
-    classes.tap do |classes|
-      classes.push 'error' if self.errors_on?(attribute)
+    classes.tap do |klasses|
+      klasses.push 'error' if self.errors_on?(attribute)
     end.join(' ')
   end
 
