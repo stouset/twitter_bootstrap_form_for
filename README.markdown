@@ -38,6 +38,9 @@ Just Rails. But you were going to use that anyway, weren't you?
     / input fields with custom add-ons
     = user.text_field :twitter_id, 'Twitter', :class => 'medium', :add_on => :prepend do
       %span.add-on @
+      
+    / select fields now have the second parameter as a label
+    = user.date_select :born_on, 'Born on'
 
     / group of radio buttons
     = user.toggles 'Email Preferences' do
