@@ -32,7 +32,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       block.call
     end
   end
-  
+
   #
   # Wraps groups of toggles (radio buttons, checkboxes) with a single label
   # and the appropriate markup. All toggle buttons should be rendered
@@ -70,16 +70,14 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       label    = args.first.nil? ? '' : args.shift
       classes  = [ 'input' ]
       classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
-      
-      _override_field_error_proc do
-        self.div_wrapper(attribute) do
-          template.concat self.label(attribute, label) if label
-          template.concat template.content_tag(:div, :class => classes.join(' ')) {
-            template.concat super(attribute, *(args << options))
-            template.concat error_span(attribute)
-            block.call if block.present?
-          }
-        end
+
+      self.div_wrapper(attribute) do
+        template.concat self.label(attribute, label) if label
+        template.concat template.content_tag(:div, :class => classes.join(' ')) {
+          template.concat super(attribute, *(args << options))
+          template.concat error_span(attribute)
+          block.call if block.present?
+        }
       end
     end
   end
@@ -89,15 +87,13 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       label       = args.first.nil? ? '' : args.shift
       target      = self.object_name.to_s + '_' + attribute.to_s
       label_attrs = toggle == :check_box ? { :for => target } : {}
-      
-      _override_field_error_proc do
-        template.content_tag(:li) do
-          template.concat template.content_tag(:label, label_attrs) {
-            template.concat super(attribute, *args)
-            template.concat ' ' # give the input and span some room
-            template.concat template.content_tag(:span, label)
-          }
-        end
+
+      template.content_tag(:li) do
+        template.concat template.content_tag(:label, label_attrs) {
+          template.concat super(attribute, *args)
+          template.concat ' ' # give the input and span some room
+          template.concat template.content_tag(:span, label)
+        }
       end
     end
   end
@@ -172,15 +168,5 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       when defined?(@auto_index)    then @auto_index
       else                               nil
     end.to_s
-  end
-  
-  BLANK_FIELD_ERROR_PROC = lambda { |*args| args.first }
-  
-  def _override_field_error_proc
-    original_field_error_proc = template.field_error_proc
-    template.field_error_proc = BLANK_FIELD_ERROR_PROC
-    yield
-  ensure
-    template.field_error_proc = original_field_error_proc
   end
 end
