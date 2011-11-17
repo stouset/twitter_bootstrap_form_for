@@ -106,7 +106,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         template.concat template.content_tag(:label, label_attrs) {
           template.concat super(attribute, *args)
           template.concat ' ' # give the input and span some room
-          template.concat template.content_tag(:span, label)
+          template.concat template.content_tag(:span, stripped_label(attribute, label))
         }
       end
     end
@@ -141,6 +141,15 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   def errors_for(attribute)
     self.object.errors[attribute].try(:join, ', ')
+  end
+
+  #
+  # Gets the generated label tag from FormBuilder and then strips the actual
+  # label tag, leaving only the text. Rails provides no way to get the
+  # localized text that FormBuilder.label uses without also getting it wrapped
+  # by <label>. Used for toggles.
+  def stripped_label(attribute, text)
+    self.label(attribute,text).gsub(/^<label(.*?)>/,'').gsub(/<\/label>$/,'')
   end
 
   private
