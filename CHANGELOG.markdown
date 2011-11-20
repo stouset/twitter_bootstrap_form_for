@@ -1,6 +1,9 @@
 Twitter Bootstrap Form For Changes
 ==================================
 
+## 1.0.4 (2011-11-20) ##
+  - support for inline fields (closes [\#2])
+
 ## 1.0.3 (2011-11-11) ##
   - ruby 1.8 compatibility for hidden fields (closes [\#20])
   - produce correct labels for radio buttons (closes [\#16])
@@ -36,4 +39,5 @@ Twitter Bootstrap Form For Changes
 [\#14]: https://github.com/stouset/twitter_bootstrap_form_for/issues/14
 [\#7]:  https://github.com/stouset/twitter_bootstrap_form_for/issues/7
 [\#5]:  https://github.com/stouset/twitter_bootstrap_form_for/issues/5
+[\#2]:  https://github.com/stouset/twitter_bootstrap_form_for/issues/2
 [\#1]:  https://github.com/stouset/twitter_bootstrap_form_for/issues/1
