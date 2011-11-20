@@ -40,7 +40,13 @@ Just Rails. But you were going to use that anyway, weren't you?
       %span.add-on @
       
     / select fields now have the second parameter as a label
-    = user.date_select :born_on, 'Born on'
+    = user.date_select :born_on, 'Born on', {}, :class => 'small'
+
+    / inline inputs are not automatically labeled
+    = user.inline 'Interests' do |inline|
+      #{inline.text_field :interest_1, :class => 'small'},
+      #{inline.text_field :interest_2, :class => 'small'}, and
+      #{inline.text_field :interest_3, :class => 'small'}
 
     / group of radio buttons
     = user.toggles 'Email Preferences' do
@@ -69,7 +75,7 @@ the functionality anticipated by Twitter Bootstrap.
 
 ## Known Bugs ##
 
-  - inline fields are not yet supported ([issue #2])
+  - inline fields don't receive error markup ([issue #28])
 
 [Twitter Bootstrap]: http://twitter.github.com/bootstrap/
-[issue #2]:          https://github.com/stouset/twitter_bootstrap_form_for/issues/2
+[issue #28]:          https://github.com/stouset/twitter_bootstrap_form_for/issues/28
