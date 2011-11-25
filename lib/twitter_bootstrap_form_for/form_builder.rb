@@ -73,10 +73,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       template.concat template.content_tag(:label, label) if label.present?
       template.concat template.content_tag(:div, :class => 'input') {
         template.content_tag(:div, :class => 'inline-inputs') do
-          self.fields_for(
+          template.fields_for(
             self.object_name,
             self.object,
-            self.options.merge(:builder => ActionView::Helpers::FormBuilder),
+            self.options.merge(:builder => ActionView::Base.default_form_builder),
             &block
           )
         end
