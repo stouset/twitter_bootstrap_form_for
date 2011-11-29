@@ -117,22 +117,32 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #
   # If no attribute is given, simply wraps contents in a clearfix container
   #
-  def div_wrapper(attribute=nil, options = {}, &block)
-    if attribute
-      options[:id]    = _wrapper_id      attribute, options[:id]
-      options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
-
-      template.content_tag :div, options, &block
-    else
-      template.content_tag :div, {:class=>'clearfix'}, &block
-    end
+  def div_wrapper(attribute=nil,options = {}, &block)
+    
+    # call the block before determining the class to see if there are
+    # errors for ANY of the attributes in this wrapper
+    block_content = template.capture(&block)
+    
+    options[:class] = _wrapper_classes options[:class], 'clearfix'
+    # can clear the attribute list now that we've calculated the class name
+    @attribute_list = []
+    
+    options[:id]    = _wrapper_id      attribute, options[:id] if attribute
+    
+    template.content_tag :div, block_content, options
+    
   end
   
   #
-  # Wraps the field in the necessary wraper ('input by default) and adds the label
+  # Wraps the field in the necessary wraper ('input' by default) and adds the label
   # If we are rendering inline, it simply yields
   #
   def div_wrapper_with_label(label,attribute=nil, options={}, &block)
+    
+    # add to the list of attributes we are using for this wrapper
+    @attribute_list ||= []
+    @attribute_list << attribute if attribute.present?
+    
     if render_inline
       yield
     else
@@ -143,9 +153,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         else
           template.concat template.content_tag(:label, label) if label.present?
         end
-        template.concat template.content_tag(:div, {:class=>input_wrapper_class},&block)
+        template.concat template.content_tag(:div,{:class=>input_wrapper_class},&block)
       end
     end
+      
   end
   
   def render_inline(&block)
@@ -156,6 +167,12 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     else
       @render_inline
     end
+  end
+  
+  def add_to_attribute_list(attribute,&block)
+    content = yield
+    @attribute_list = []
+    content
   end
 
   def error_span(attribute, options = {})
@@ -194,9 +211,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # +attribute+, such as 'errors' if any errors are present on the attribute.
   # This merges any +classes+ passed in.
   #
-  def _wrapper_classes(attribute, *classes)
+  def _wrapper_classes(*classes)
+    template.logger.info(@attribute_list.join(','))
     classes.compact.tap do |klasses|
-      klasses.push 'error' if self.errors_on?(attribute)
+      klasses.push 'error' if @attribute_list.detect{|att| self.errors_on?(att)}
     end.join(' ')
   end
 
