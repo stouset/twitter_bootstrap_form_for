@@ -63,8 +63,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
 
   #
-  # Creates bootstrap wrapping before yielding a plain old rails builder
-  # to the supplied block.
+  # Creates bootstrap wrapping before yielding this builder instance.
+  # Yielding this instance is not necessary, but present for backwards compatability.
+  # 
   #
   def inline(label = nil, &block)
     div_wrapper_with_label(label) do
@@ -114,6 +115,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # id for the object's +attribute+. HTML options can be overridden by passing
   # an +options+ hash.
   #
+  # If no attribute is given, simply wraps contents in a clearfix container
+  #
   def div_wrapper(attribute=nil, options = {}, &block)
     if attribute
       options[:id]    = _wrapper_id      attribute, options[:id]
@@ -125,6 +128,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end
   end
   
+  #
+  # Wraps the field in the necessary wraper ('input by default) and adds the label
+  # If we are rendering inline, it simply yields
+  #
   def div_wrapper_with_label(label,attribute=nil, options={}, &block)
     if render_inline
       yield
