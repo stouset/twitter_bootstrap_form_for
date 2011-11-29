@@ -69,12 +69,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   def inline(label = nil, &block)
     div_wrapper_with_label(label) do
       template.content_tag(:div, :class => 'inline-inputs') do
-        template.fields_for(
-          self.object_name,
-          self.object,
-          self.options.merge(:builder => ActionView::Base.default_form_builder),
-          &block
-        )
+        render_inline do
+          yield(self)
+        end
       end
     end
   end
@@ -129,14 +126,28 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
   
   def div_wrapper_with_label(label,attribute=nil, options={}, &block)
-    input_wrapper_class = options.delete(:input_wrapper_class) || 'input'
-    div_wrapper(attribute,options) do
-      if attribute
-        template.concat self.label(attribute, label)
-      else
-        template.concat template.content_tag(:label, label) if label.present?
+    if render_inline
+      yield
+    else
+      input_wrapper_class = options.delete(:input_wrapper_class) || 'input'
+      div_wrapper(attribute,options) do
+        if attribute
+          template.concat self.label(attribute, label)
+        else
+          template.concat template.content_tag(:label, label) if label.present?
+        end
+        template.concat template.content_tag(:div, {:class=>input_wrapper_class},&block)
       end
-      template.concat template.content_tag(:div, {:class=>input_wrapper_class},&block)
+    end
+  end
+  
+  def render_inline(&block)
+    if block.present?
+      @render_inline = true
+      yield
+      @render_inline = false
+    else
+      @render_inline
     end
   end
 
