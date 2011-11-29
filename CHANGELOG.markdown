@@ -1,6 +1,9 @@
 Twitter Bootstrap Form For Changes
 ==================================
 
+## 1.0.5 (2011-11-28) ##
+  - properly name inline input fields (re-closes [\#2])
+
 ## 1.0.4 (2011-11-20) ##
   - support for inline fields (closes [\#2])
 
