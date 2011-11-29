@@ -39,11 +39,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # inside of here, and will not look correct unless they are.
   #
   def toggles(label = nil, &block)
-    div_wrapper do
-      template.concat template.content_tag(:label, label)
-      template.concat template.content_tag(:div, :class => "input") {
-        template.content_tag(:ul, :class => "inputs-list") { block.call }
-      }
+    div_wrapper_with_label do
+      template.content_tag(:ul, :class => "inputs-list") { block.call }
     end
   end
   
@@ -70,18 +67,15 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # to the supplied block.
   #
   def inline(label = nil, &block)
-    div_wrapper do
-      template.concat template.content_tag(:label, label) if label.present?
-      template.concat template.content_tag(:div, :class => 'input') {
-        template.content_tag(:div, :class => 'inline-inputs') do
-          template.fields_for(
-            self.object_name,
-            self.object,
-            self.options.merge(:builder => ActionView::Base.default_form_builder),
-            &block
-          )
-        end
-      }
+    div_wrapper_with_label(label) do
+      template.content_tag(:div, :class => 'inline-inputs') do
+        template.fields_for(
+          self.object_name,
+          self.object,
+          self.options.merge(:builder => ActionView::Base.default_form_builder),
+          &block
+        )
+      end
     end
   end
 
@@ -91,14 +85,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       label    = args.first.nil? ? '' : args.shift
       classes  = [ 'input' ]
       classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
-
-      self.div_wrapper(attribute) do
-        template.concat self.label(attribute, label) if label
-        template.concat template.content_tag(:div, :class => classes.join(' ')) {
-          template.concat super(attribute, *(args << options))
-          template.concat error_span(attribute)
-          block.call if block.present?
-        }
+      
+      self.div_wrapper_with_label(label,attribute,:input_wrapper_class=>classes.join(' ')) do
+        template.concat super(attribute, *(args << options))
+        template.concat error_span(attribute)
+        block.call if block.present?
       end
     end
   end
@@ -134,6 +125,18 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       template.content_tag :div, options, &block
     else
       template.content_tag :div, {:class=>'clearfix'}, &block
+    end
+  end
+  
+  def div_wrapper_with_label(label,attribute=nil, options={}, &block)
+    input_wrapper_class = options.delete(:input_wrapper_class) || 'input'
+    div_wrapper(attribute,options) do
+      if attribute
+        template.concat self.label(attribute, label)
+      else
+        template.concat template.content_tag(:label, label) if label.present?
+      end
+      template.concat template.content_tag(:div, {:class=>input_wrapper_class},&block)
     end
   end
 
