@@ -39,13 +39,14 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # inside of here, and will not look correct unless they are.
   #
   def toggles(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
+    div_wrapper do
       template.concat template.content_tag(:label, label)
       template.concat template.content_tag(:div, :class => "input") {
         template.content_tag(:ul, :class => "inputs-list") { block.call }
       }
     end
   end
+  
 
   #
   # Wraps action buttons into their own styled container.
@@ -69,7 +70,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # to the supplied block.
   #
   def inline(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
+    div_wrapper do
       template.concat template.content_tag(:label, label) if label.present?
       template.concat template.content_tag(:div, :class => 'input') {
         template.content_tag(:div, :class => 'inline-inputs') do
@@ -125,11 +126,15 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # id for the object's +attribute+. HTML options can be overridden by passing
   # an +options+ hash.
   #
-  def div_wrapper(attribute, options = {}, &block)
-    options[:id]    = _wrapper_id      attribute, options[:id]
-    options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
+  def div_wrapper(attribute=nil, options = {}, &block)
+    if attribute
+      options[:id]    = _wrapper_id      attribute, options[:id]
+      options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
 
-    template.content_tag :div, options, &block
+      template.content_tag :div, options, &block
+    else
+      template.content_tag :div, {:class=>'clearfix'}, &block
+    end
   end
 
   def error_span(attribute, options = {})
