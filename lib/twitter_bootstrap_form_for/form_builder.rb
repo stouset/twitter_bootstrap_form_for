@@ -39,7 +39,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # inside of here, and will not look correct unless they are.
   #
   def toggles(label = nil, &block)
-    div_wrapper_with_label do
+    div_wrapper_with_label(label) do
       template.content_tag(:ul, :class => "inputs-list") { block.call }
     end
   end
