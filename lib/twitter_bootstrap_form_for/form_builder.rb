@@ -39,13 +39,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # inside of here, and will not look correct unless they are.
   #
   def toggles(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
-      template.concat template.content_tag(:label, label)
-      template.concat template.content_tag(:div, :class => "input") {
-        template.content_tag(:ul, :class => "inputs-list") { block.call }
-      }
+    div_wrapper_with_label(label) do
+      template.content_tag(:ul, :class => "inputs-list") { block.call }
     end
   end
+  
 
   #
   # Wraps action buttons into their own styled container.
@@ -65,22 +63,17 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
 
   #
-  # Creates bootstrap wrapping before yielding a plain old rails builder
-  # to the supplied block.
+  # Creates bootstrap wrapping before yielding this builder instance.
+  # Yielding this instance is not necessary, but present for backwards compatability.
+  # 
   #
   def inline(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
-      template.concat template.content_tag(:label, label) if label.present?
-      template.concat template.content_tag(:div, :class => 'input') {
-        template.content_tag(:div, :class => 'inline-inputs') do
-          template.fields_for(
-            self.object_name,
-            self.object,
-            self.options.merge(:builder => ActionView::Base.default_form_builder),
-            &block
-          )
+    div_wrapper_with_label(label) do
+      template.content_tag(:div, :class => 'inline-inputs') do
+        render_inline do
+          yield(self)
         end
-      }
+      end
     end
   end
 
@@ -90,14 +83,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       label    = args.first.nil? ? '' : args.shift
       classes  = [ 'input' ]
       classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
-
-      self.div_wrapper(attribute) do
-        template.concat self.label(attribute, label) if label
-        template.concat template.content_tag(:div, :class => classes.join(' ')) {
-          template.concat super(attribute, *(args << options))
-          template.concat error_span(attribute)
-          block.call if block.present?
-        }
+      
+      self.div_wrapper_with_label(label,attribute,:input_wrapper_class=>classes.join(' ')) do
+        template.concat super(attribute, *(args << options))
+        template.concat error_span(attribute)
+        block.call if block.present?
       end
     end
   end
@@ -125,11 +115,47 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # id for the object's +attribute+. HTML options can be overridden by passing
   # an +options+ hash.
   #
-  def div_wrapper(attribute, options = {}, &block)
-    options[:id]    = _wrapper_id      attribute, options[:id]
-    options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
+  # If no attribute is given, simply wraps contents in a clearfix container
+  #
+  def div_wrapper(attribute=nil, options = {}, &block)
+    if attribute
+      options[:id]    = _wrapper_id      attribute, options[:id]
+      options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
 
-    template.content_tag :div, options, &block
+      template.content_tag :div, options, &block
+    else
+      template.content_tag :div, {:class=>'clearfix'}, &block
+    end
+  end
+  
+  #
+  # Wraps the field in the necessary wraper ('input by default) and adds the label
+  # If we are rendering inline, it simply yields
+  #
+  def div_wrapper_with_label(label,attribute=nil, options={}, &block)
+    if render_inline
+      yield
+    else
+      input_wrapper_class = options.delete(:input_wrapper_class) || 'input'
+      div_wrapper(attribute,options) do
+        if attribute
+          template.concat self.label(attribute, label)
+        else
+          template.concat template.content_tag(:label, label) if label.present?
+        end
+        template.concat template.content_tag(:div, {:class=>input_wrapper_class},&block)
+      end
+    end
+  end
+  
+  def render_inline(&block)
+    if block.present?
+      @render_inline = true
+      yield
+      @render_inline = false
+    else
+      @render_inline
+    end
   end
 
   def error_span(attribute, options = {})
