@@ -9,6 +9,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   attr_reader :object_name
 
   INPUTS = [
+    :select,
     *ActionView::Helpers::FormBuilder.instance_methods.grep(%r{
       _(area|field|select)$ # all area, field, and select methods
     }mx).map(&:to_sym)
@@ -26,16 +27,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # +legend+ text.
   #
   def inputs(legend = nil, options = {}, &block)
-    # stash the old field_error_proc, then override it temporarily
-    original_field_error_proc = template.field_error_proc
-    template.field_error_proc = lambda {|html_tag, instance| html_tag }
-
     template.content_tag(:fieldset, options) do
       template.concat template.content_tag(:legend, legend) unless legend.nil?
       block.call
     end
-  ensure
-    template.field_error_proc = original_field_error_proc
   end
 
   #
@@ -43,10 +38,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # and the appropriate markup. All toggle buttons should be rendered
   # inside of here, and will not look correct unless they are.
   #
-  def toggles(label = nil, *args, &block)
-    options = args.extract_options!
-    options[:class] = options.include?(:class) ? options[:class] + ' clearfix' : 'clearfix'
-    template.content_tag(:div, options) do
+  def toggles(label = nil, &block)
+    template.content_tag(:div, :class => 'clearfix') do
       template.concat template.content_tag(:label, label)
       template.concat template.content_tag(:div, :class => "input") {
         template.content_tag(:ul, :class => "inputs-list") { block.call }
@@ -71,21 +64,36 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     super value, options
   end
 
+  #
+  # Creates bootstrap wrapping before yielding a plain old rails builder
+  # to the supplied block.
+  #
+  def inline(label = nil, &block)
+    template.content_tag(:div, :class => 'clearfix') do
+      template.concat template.content_tag(:label, label) if label.present?
+      template.concat template.content_tag(:div, :class => 'input') {
+        template.content_tag(:div, :class => 'inline-inputs') do
+          template.fields_for(
+            self.object_name,
+            self.object,
+            self.options.merge(:builder => ActionView::Base.default_form_builder),
+            &block
+          )
+        end
+      }
+    end
+  end
+
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
       options  = args.extract_options!
-      if options[:skip]
-        options.delete(:skip)
-        return super(attribute, options)
-      end
-
       label    = args.first.nil? ? '' : args.shift
       classes  = [ 'input' ]
       classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
 
       self.div_wrapper(attribute) do
         template.concat self.label(attribute, label) if label
-        template.concat template.content_tag(:div, :class => classes) {
+        template.concat template.content_tag(:div, :class => classes.join(' ')) {
           template.concat super(attribute, *(args << options))
           template.concat error_span(attribute)
           block.call if block.present?
@@ -118,6 +126,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # an +options+ hash.
   #
   def div_wrapper(attribute, options = {}, &block)
+    options[:id]    = _wrapper_id      attribute, options[:id]
     options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
 
     template.content_tag :div, options, &block
@@ -143,12 +152,24 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   private
 
   #
+  # Returns an HTML id to uniquely identify the markup around an input field.
+  # If a +default+ is provided, it uses that one instead.
+  #
+  def _wrapper_id(attribute, default = nil)
+    default || [
+      _object_name + _object_index,
+      _attribute_name(attribute),
+      'input'
+     ].join('_')
+  end
+
+  #
   # Returns any classes necessary for the wrapper div around fields for
   # +attribute+, such as 'errors' if any errors are present on the attribute.
   # This merges any +classes+ passed in.
   #
   def _wrapper_classes(attribute, *classes)
-    classes.tap do |klasses|
+    classes.compact.tap do |klasses|
       klasses.push 'error' if self.errors_on?(attribute)
     end.join(' ')
   end
@@ -169,4 +190,3 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end.to_s
   end
 end
-
