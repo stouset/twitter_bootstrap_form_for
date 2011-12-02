@@ -1,6 +1,10 @@
 Twitter Bootstrap Form For Changes
 ==================================
 
+## 1.0.6 (unreleased)
+  - use base FormBuilder rather than user-specified default
+    for inline inputs (re-re-closes [\#2])
+
 ## 1.0.5 (2011-11-28) ##
   - properly name inline input fields (re-closes [\#2])
 
