@@ -76,7 +76,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           template.fields_for(
             self.object_name,
             self.object,
-            self.options.merge(:builder => ActionView::Base.default_form_builder),
+            self.options.merge(:builder => ActionView::Helpers::FormBuilder),
             &block
           )
         end
