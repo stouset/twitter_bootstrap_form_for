@@ -124,7 +124,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     
     options[:class] = _wrapper_classes options[:class], 'clearfix'
     # can clear the attribute list now that we've calculated the class name
-    _initialize_attribute_lists
+    _initialize_attribute_list
     
     options[:id]    = _wrapper_id      attribute, options[:id] if attribute
     
@@ -184,20 +184,17 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
   
   def errors?
-    attribute_error_messages.present?
+    @attribute_list.detect{|att| errors_on?(att)}
   end
   
   def attribute_error_messages
-    return @attribute_error_messages if @attribute_error_messages
     if @attribute_list.length > 1
-      @attribute_error_messages = @attribute_list.collect{|att| full_errors_for(att)}.flatten.compact
+      @attribute_list.collect{|att| full_errors_for(att)}.flatten.compact
     elsif @attribute_list.length == 1
-      @attribute_error_messages = errors_for(@attribute_list.first)
+      errors_for(@attribute_list.first)
     else
-      @attribute_error_messages = []
+      []
     end
-    return @attribute_error_messages
-    
   end
   
   def full_errors_for(attribute)
@@ -263,8 +260,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end.to_s
   end
   
-  def _initialize_attribute_lists
+  def _initialize_attribute_list
     @attribute_list = []
-    @attribute_error_messages = nil
   end
 end
