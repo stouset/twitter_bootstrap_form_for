@@ -86,7 +86,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       
       self.div_wrapper_with_label(label,attribute,:input_wrapper_class=>classes.join(' ')) do
         template.concat super(attribute, *(args << options))
-        template.concat error_span(attribute)
         block.call if block.present?
       end
     end
@@ -125,7 +124,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     
     options[:class] = _wrapper_classes options[:class], 'clearfix'
     # can clear the attribute list now that we've calculated the class name
-    @attribute_list = []
+    _initialize_attribute_lists
     
     options[:id]    = _wrapper_id      attribute, options[:id] if attribute
     
@@ -153,7 +152,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         else
           template.concat template.content_tag(:label, label) if label.present?
         end
-        template.concat template.content_tag(:div,{:class=>input_wrapper_class},&block)
+        block_content = template.capture(&block)
+        block_content << error_span
+        template.concat(template.content_tag(:div,block_content,:class=>input_wrapper_class))
       end
     end
       
@@ -168,28 +169,57 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       @render_inline
     end
   end
-  
-  def add_to_attribute_list(attribute,&block)
-    content = yield
-    @attribute_list = []
-    content
-  end
 
-  def error_span(attribute, options = {})
+  def error_span(options = {})
     options[:class] ||= 'help-inline'
 
-    template.content_tag(
-      :span, self.errors_for(attribute),
-      :class => options[:class]
-    ) if self.errors_on?(attribute)
+    if errors?
+      template.content_tag(
+        :span, attribute_error_messages.join(', '),
+        :class => options[:class]
+      ) 
+    else
+      ''
+    end
   end
-
+  
+  def errors?
+    attribute_error_messages.present?
+  end
+  
+  def attribute_error_messages
+    return @attribute_error_messages if @attribute_error_messages
+    if @attribute_list.length > 1
+      @attribute_error_messages = @attribute_list.collect{|att| full_errors_for(att)}.flatten.compact
+    elsif @attribute_list.length == 1
+      @attribute_error_messages = errors_for(@attribute_list.first)
+    else
+      @attribute_error_messages = []
+    end
+    return @attribute_error_messages
+    
+  end
+  
+  def full_errors_for(attribute)
+    if errors_on?(attribute)
+      attr_name = attribute.to_s.gsub('.', '_').humanize
+      attr_name = self.object.class.base_class.human_attribute_name(attribute, :default => attr_name)
+      message = errors_for(attribute).join(', ')
+    
+      I18n.t(:"errors.format", {
+        :default   => "%{attribute} %{message}",
+        :attribute => attr_name,
+        :message   => message
+      })
+    end
+  end
+  
   def errors_on?(attribute)
     self.object.errors[attribute].present? if self.object.respond_to?(:errors)
   end
 
   def errors_for(attribute)
-    self.object.errors[attribute].try(:join, ', ')
+    errors_on?(attribute) ? self.object.errors[attribute] : []
   end
 
   private
@@ -212,9 +242,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # This merges any +classes+ passed in.
   #
   def _wrapper_classes(*classes)
-    template.logger.info(@attribute_list.join(','))
     classes.compact.tap do |klasses|
-      klasses.push 'error' if @attribute_list.detect{|att| self.errors_on?(att)}
+      klasses.push 'error' if errors?
     end.join(' ')
   end
 
@@ -232,5 +261,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       when defined?(@auto_index)    then @auto_index
       else                               nil
     end.to_s
+  end
+  
+  def _initialize_attribute_lists
+    @attribute_list = []
+    @attribute_error_messages = nil
   end
 end
