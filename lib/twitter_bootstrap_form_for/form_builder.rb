@@ -83,11 +83,19 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       }
     end
   end
+  
+  def default_label(attribute)
+    if self.object.class.respond_to? :human_attribute_name
+      self.object.class.human_attribute_name(attribute)
+    else
+      ''
+    end
+  end
 
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
       options  = args.extract_options!
-      label    = args.first.nil? ? '' : args.shift
+      label    = args.first.nil? ? default_label(attribute) : args.shift
       classes  = [ 'input' ]
       classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
 
@@ -104,7 +112,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
-      label       = args.first.nil? ? '' : args.shift
+      label       = args.first.nil? ? default_label(attribute) : args.shift
       target      = self.object_name.to_s + '_' + attribute.to_s
       label_attrs = toggle == :check_box ? { :for => target } : {}
 
