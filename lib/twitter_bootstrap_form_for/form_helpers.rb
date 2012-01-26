@@ -21,10 +21,10 @@ module TwitterBootstrapFormFor::FormHelpers
   BLANK_FIELD_ERROR_PROC = lambda {|input, _| input }
 
   def _override_field_error_proc
-    original_field_error_proc = self.field_error_proc
-    self.field_error_proc     = BLANK_FIELD_ERROR_PROC
+    original_field_error_proc           = ::ActionView::Base.field_error_proc
+    ::ActionView::Base.field_error_proc = BLANK_FIELD_ERROR_PROC
     yield
   ensure
-    self.field_error_proc     = original_field_error_proc
+    ::ActionView::Base.field_error_proc = original_field_error_proc
   end
 end
