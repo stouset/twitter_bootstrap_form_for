@@ -9,7 +9,7 @@ module TwitterBootstrapFormFor::FormHelpers
         options[:builder] = TwitterBootstrapFormFor::FormBuilder
 
         # call the original method with our overridden options
-        _override_field_error_proc do
+        custom_override_field_error_proc do
           send method, record, *(args << options), &block
         end
       end
@@ -18,13 +18,16 @@ module TwitterBootstrapFormFor::FormHelpers
 
   private
 
-  BLANK_FIELD_ERROR_PROC = lambda {|input, _| input }
+  BLANK_FIELD_ERROR_PROC = proc do |html_tag, instance_tag|
+    html_tag
+  end
 
-  def _override_field_error_proc
-    original_field_error_proc = self.field_error_proc
-    self.field_error_proc     = BLANK_FIELD_ERROR_PROC
+  def custom_override_field_error_proc(&block)
+    original_field_error_proc = ::ActionView::Base.field_error_proc
+    ::ActionView::Base.field_error_proc = BLANK_FIELD_ERROR_PROC
     yield
   ensure
-    self.field_error_proc     = original_field_error_proc
+    ::ActionView::Base.field_error_proc = original_field_error_proc
   end
+
 end
