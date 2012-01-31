@@ -39,10 +39,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # inside of here, and will not look correct unless they are.
   #
   def toggles(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
-      template.concat template.content_tag(:label, label)
-      template.concat template.content_tag(:div, :class => "input") {
-        template.content_tag(:ul, :class => "inputs-list") { block.call }
+    template.content_tag(:div, :class => 'control-group') do
+      template.concat template.content_tag(:label, label, :class => 'control-label')
+      template.concat template.content_tag(:div, :class => "controls") {
+        block.call
       }
     end
   end
@@ -51,7 +51,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Wraps action buttons into their own styled container.
   #
   def actions(&block)
-    template.content_tag(:div, :class => 'actions', &block)
+    template.content_tag(:div, :class => 'form-actions', &block)
   end
 
   #
@@ -69,9 +69,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # to the supplied block.
   #
   def inline(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
-      template.concat template.content_tag(:label, label) if label.present?
-      template.concat template.content_tag(:div, :class => 'input') {
+    template.content_tag(:div, :class => 'control-group') do
+      template.concat template.content_tag(:label, label, :class => 'control-label') if label.present?
+      template.concat template.content_tag(:div, :class => 'controls') {
         template.content_tag(:div, :class => 'inline-inputs') do
           template.fields_for(
             self.object_name,
@@ -132,7 +132,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #
   def div_wrapper(attribute, options = {}, &block)
     options[:id]    = _wrapper_id      attribute, options[:id]
-    options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
+    options[:class] = _wrapper_classes attribute, options[:class], 'control-group'
 
     template.content_tag :div, options, &block
   end
@@ -164,7 +164,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     default || [
       _object_name + _object_index,
       _attribute_name(attribute),
-      'input'
+      'controls'
      ].join('_')
   end
 
