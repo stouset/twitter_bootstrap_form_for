@@ -114,6 +114,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           template.concat ' ' # give the input and span some room
           template.concat template.content_tag(:span, label)
         }
+        if toggle == :check_box
+          template.concat template.content_tag(:div, :class => "clearfix error") {
+            template.concat error_span(attribute)
+          } if errors_on?(attribute)
+        end
       end
     end
   end
