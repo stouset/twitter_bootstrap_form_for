@@ -63,23 +63,14 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
 
   #
-  # Creates bootstrap wrapping before yielding a plain old rails builder
-  # to the supplied block.
+  # Yields the supplied block to plain old rails builder
   #
   def inline(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
-      template.concat template.content_tag(:label, label) if label.present?
-      template.concat template.content_tag(:div, :class => 'input') {
-        template.content_tag(:div, :class => 'inline-inputs') do
-          template.fields_for(
-            self.object_name,
-            self.object,
-            self.options.merge(:builder => ActionView::Helpers::FormBuilder),
-            &block
-          )
-        end
-      }
-    end
+    template.fields_for(self.object_name,
+                        self.object,
+                        self.options.merge(:builder => ActionView::Helpers::FormBuilder),
+                        &block
+                        )    
   end
 
   INPUTS.each do |input|
