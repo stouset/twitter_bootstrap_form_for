@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.name        = 'twitter_bootstrap_form_for'
   s.version     = TwitterBootstrapFormFor::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = [ 'Stephen Touset, modified by: Konrad Oleksiuk' ]
+  s.authors     = [ 'Stephen Touset' ]
   s.email       = [ 'stephen@touset.org' ]
   s.homepage    = 'http://github.com/stouset/twitter_bootstrap_form_for'
   s.summary     = 'Rails form builder optimized for Twitter Bootstrap'
