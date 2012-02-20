@@ -1,5 +1,7 @@
 Twitter Bootstrap Form For Changes
 ==================================
+## 1.0.7
+  - changed submit button class to 'btn btn-primary'
 
 ## 1.0.6 (unreleased)
   - use base FormBuilder rather than user-specified default
