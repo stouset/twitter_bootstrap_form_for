@@ -83,9 +83,4 @@ simple:
   * the last options hash accepts an `:add_on` key
   * if a block is passed, the HTML it outputs is placed immediately after the input
 
-## Known Bugs ##
-
-  - inline fields don't receive error markup ([issue #28])
-
 [Twitter Bootstrap]: http://twitter.github.com/bootstrap/
-[issue #28]:          https://github.com/stouset/twitter_bootstrap_form_for/issues/28
