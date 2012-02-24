@@ -26,24 +26,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Wraps the contents of the block passed in a fieldset with optional
   # +legend+ text.
   #
-  def inputs(legend = nil, options = {}, &block)
+  def fieldset(legend = nil, options = {})
     template.content_tag(:fieldset, options) do
       template.concat template.content_tag(:legend, legend) unless legend.nil?
-      block.call
-    end
-  end
-
-  #
-  # Wraps groups of toggles (radio buttons, checkboxes) with a single label
-  # and the appropriate markup. All toggle buttons should be rendered
-  # inside of here, and will not look correct unless they are.
-  #
-  def toggles(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
-      template.concat template.content_tag(:label, label)
-      template.concat template.content_tag(:div, :class => "input") {
-        template.content_tag(:ul, :class => "inputs-list") { block.call }
-      }
+      yield
     end
   end
 
@@ -51,7 +37,48 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Wraps action buttons into their own styled container.
   #
   def actions(&block)
-    template.content_tag(:div, :class => 'actions', &block)
+    template.content_tag(:div, :class => 'form-actions', &block)
+  end
+
+  #
+  # Attaches a label to the inputs rendered inside of the block passed to it.
+  # Associates the label with the input for the +attribute+ given. If +text+
+  #is passed, uses that as the text for the label; otherwise humanizes the
+  # +attribute+ name.
+  #
+  def label(attribute, text = '', options = {}, &block)
+    text, attribute = attribute, nil if attribute.kind_of? String
+
+    options = { :class => 'control-label' }.merge(options)
+    id      = _wrapper_id      attribute, 'control_group'
+    classes = _wrapper_classes attribute, 'control-group'
+
+    template.content_tag(:div, :id => id, :class => classes) do
+      template.concat case
+        when attribute && text then super(attribute, text, options, &nil)
+        when attribute         then super(attribute, nil,  options, &nil)
+        when text              then template.label_tag(nil, text, options, &nil)
+      end
+
+      template.concat template.content_tag(:div, :class => 'controls') {
+        template.fields_for(
+          self.object_name,
+          self.object,
+          self.options.merge(:builder => TwitterBootstrapFormFor::FormControls),
+          &block
+        )
+      }
+    end
+  end
+
+  #
+  # Renders a button with default classes to style it as a form button.
+  #
+  def button(value = nil, options = {})
+    super value, {
+      :type  => 'button',
+      :class => 'btn',
+    }.merge(options)
   end
 
   #
@@ -59,119 +86,50 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # button.
   #
   def submit(value = nil, options = {})
-    options[:class] ||= 'btn primary'
-
-    super value, options
-  end
-
-  #
-  # Creates bootstrap wrapping before yielding a plain old rails builder
-  # to the supplied block.
-  #
-  def inline(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
-      template.concat template.content_tag(:label, label) if label.present?
-      template.concat template.content_tag(:div, :class => 'input') {
-        template.content_tag(:div, :class => 'inline-inputs') do
-          template.fields_for(
-            self.object_name,
-            self.object,
-            self.options.merge(:builder => ActionView::Helpers::FormBuilder),
-            &block
-          )
-        end
-      }
-    end
+    self.button value, {
+      :type  => 'submit',
+      :class => 'btn btn-primary',
+    }.merge(options)
   end
 
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
-      options  = args.extract_options!
-      label    = args.first.nil? ? '' : args.shift
-      classes  = [ 'input' ]
-      classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
+      options = args.extract_options!
+      text    = args.any? ? args.shift : ''
 
-      self.div_wrapper(attribute) do
-        template.concat self.label(attribute, label) if label
-        template.concat template.content_tag(:div, :class => classes.join(' ')) {
-          template.concat super(attribute, *(args << options))
-          template.concat error_span(attribute)
-          block.call if block.present?
-        }
-      end
-    end
-  end
-
-  TOGGLES.each do |toggle|
-    define_method toggle do |attribute, *args, &block|
-      label       = args.first.nil? ? '' : args.shift
-      target      = self.object_name.to_s + '_' + attribute.to_s
-      label_attrs = toggle == :check_box ? { :for => target } : {}
-
-      template.content_tag(:li) do
-        template.concat template.content_tag(:label, label_attrs) {
-          template.concat super(attribute, *args)
-          template.concat ' ' # give the input and span some room
-          template.concat template.content_tag(:span, label)
-        }
+      self.label(attribute, text) do |builder|
+        builder.send(input, attribute, *(args << options), &block)
       end
     end
   end
 
   protected
 
-  #
-  # Wraps the contents of +block+ inside a +tag+ with an appropriate class and
-  # id for the object's +attribute+. HTML options can be overridden by passing
-  # an +options+ hash.
-  #
-  def div_wrapper(attribute, options = {}, &block)
-    options[:id]    = _wrapper_id      attribute, options[:id]
-    options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
-
-    template.content_tag :div, options, &block
-  end
-
-  def error_span(attribute, options = {})
-    options[:class] ||= 'help-inline'
-
-    template.content_tag(
-      :span, self.errors_for(attribute),
-      :class => options[:class]
-    ) if self.errors_on?(attribute)
-  end
-
   def errors_on?(attribute)
     self.object.errors[attribute].present? if self.object.respond_to?(:errors)
-  end
-
-  def errors_for(attribute)
-    self.object.errors[attribute].try(:join, ', ')
   end
 
   private
 
   #
   # Returns an HTML id to uniquely identify the markup around an input field.
-  # If a +default+ is provided, it uses that one instead.
   #
-  def _wrapper_id(attribute, default = nil)
-    default || [
+  def _wrapper_id(attribute, suffix = nil)
+    [
       _object_name + _object_index,
       _attribute_name(attribute),
-      'input'
-     ].join('_')
+      suffix,
+     ].compact.join('_') if attribute
   end
 
   #
   # Returns any classes necessary for the wrapper div around fields for
   # +attribute+, such as 'errors' if any errors are present on the attribute.
-  # This merges any +classes+ passed in.
+  # Merges any +classes+ passed in.
   #
   def _wrapper_classes(attribute, *classes)
-    classes.compact.tap do |klasses|
-      klasses.push 'error' if self.errors_on?(attribute)
-    end.join(' ')
+    classes.push 'error' if attribute and self.errors_on?(attribute)
+    classes.compact.join(' ')
   end
 
   def _attribute_name(attribute)
@@ -188,5 +146,70 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       when defined?(@auto_index)    then @auto_index
       else                               nil
     end.to_s
+  end
+end
+
+class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
+  attr_reader :template
+  attr_reader :object
+  attr_reader :object_name
+
+  TwitterBootstrapFormFor::FormBuilder::INPUTS.each do |input|
+    define_method input do |attribute, *args, &block|
+      options = args.extract_options!
+      add_on  = options.delete(:add_on)
+      tag     = add_on.present? ? :div : :span
+      classes = [ "input", add_on ].compact.join('-')
+
+      template.content_tag(tag, :class => classes) do
+        template.concat super attribute, *(args << options)
+        template.concat self.error_span(attribute) if self.errors_on?(attribute)
+        block.call if block.present?
+      end
+    end
+  end
+
+  def check_box(attribute, text, options = {}, checked_value = 1, unchecked_value = 0)
+    klasses = _merge_classes 'checkbox', options.delete(:inline) && 'inline'
+
+    self.label(attribute, :class => klasses) do
+      template.concat super(attribute, options, checked_value, unchecked_value)
+      template.concat text
+      yield if block_given?
+    end
+  end
+
+  def radio_button(attribute, value, text = nil, options = {})
+    klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
+
+    self.label(attribute, :class => klasses) do
+      template.concat super(attribute, value, options)
+      template.concat text || value.to_s.humanize.titleize
+      yield if block_given?
+    end
+  end
+
+  protected
+
+  def error_span(attribute, options = {})
+    options[:class] = _merge_classes options[:class], 'help-inline'
+
+    template.content_tag :span,
+      self.errors_for(attribute),
+      :class => options[:class]
+  end
+
+  def errors_for(attribute)
+    self.object.errors[attribute].try(:join, ', ')
+  end
+
+  def errors_on?(attribute)
+    self.object.errors[attribute].present? if self.object.respond_to?(:errors)
+  end
+
+  private
+
+  def _merge_classes(string, *classes)
+    string.to_s.split(' ').push(*classes.compact).join(' ')
   end
 end
