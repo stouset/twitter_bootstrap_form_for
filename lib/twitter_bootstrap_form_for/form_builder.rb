@@ -39,7 +39,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # inside of here, and will not look correct unless they are.
   #
   def toggles(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
+    template.content_tag(:div, :class => 'control-group') do
       template.concat template.content_tag(:label, label)
       template.concat template.content_tag(:div, :class => "input") {
         template.content_tag(:ul, :class => "inputs-list") { block.call }
@@ -69,7 +69,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # to the supplied block.
   #
   def inline(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
+    template.content_tag(:div, :class => 'control-group') do
       template.concat template.content_tag(:label, label) if label.present?
       template.concat template.content_tag(:div, :class => 'input') {
         template.content_tag(:div, :class => 'inline-inputs') do
@@ -115,7 +115,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           template.concat template.content_tag(:span, label)
         }
         if toggle == :check_box
-          template.concat template.content_tag(:div, :class => "clearfix error") {
+          template.concat template.content_tag(:div, :class => "control-group error") {
             template.concat error_span(attribute)
           } if errors_on?(attribute)
         end
@@ -132,7 +132,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #
   def div_wrapper(attribute, options = {}, &block)
     options[:id]    = _wrapper_id      attribute, options[:id]
-    options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
+    options[:class] = _wrapper_classes attribute, options[:class], 'control-group'
 
     template.content_tag :div, options, &block
   end
