@@ -75,7 +75,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Renders a button with default classes to style it as a form button.
   #
   def button(value = nil, options = {})
-    super value, {
+    template.button_tag value, {
       :type  => 'button',
       :class => 'btn',
     }.merge(options)
@@ -86,7 +86,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # button.
   #
   def submit(value = nil, options = {})
-    self.button value, {
+    button value, {
       :type  => 'submit',
       :class => 'btn btn-primary',
     }.merge(options)
