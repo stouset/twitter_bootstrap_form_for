@@ -183,7 +183,7 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
   def radio_button(attribute, value, text = nil, options = {})
     klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
 
-    self.label(attribute, :class => klasses) do
+    self.label(attribute, :value => value, :class => klasses) do
       template.concat super(attribute, value, options)
       template.concat text || value.to_s.humanize.titleize
       yield if block_given?
