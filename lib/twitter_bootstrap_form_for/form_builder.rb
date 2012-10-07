@@ -98,7 +98,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #
   def price_field(attribute, *args)
     options = args.extract_options!
-    options = { :add_on => :prepend }.merge(options)
+    options[:add_on] ||= :prepend
+    options[:value]  ||= template.number_with_precision(
+                            object.read_attribute(attribute),
+                            :precision => 2) || 0
 
     text_field(attribute, *(args << options)) do
       template.concat template.content_tag(:span,
