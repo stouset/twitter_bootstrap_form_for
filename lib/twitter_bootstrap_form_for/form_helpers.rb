@@ -8,6 +8,15 @@ module TwitterBootstrapFormFor::FormHelpers
         options           = args.extract_options!
         options[:builder] = TwitterBootstrapFormFor::FormBuilder
 
+        if options[:horizontal]
+          if options[:html] && options[:html][:class]
+            options[:html][:class] << " form-horizontal"
+          else
+            options[:html] ||= {}
+            options[:html][:class] = "form-horizontal"
+          end
+        end
+
         # call the original method with our overridden options
         _override_field_error_proc do
           send method, record, *(args << options), &block

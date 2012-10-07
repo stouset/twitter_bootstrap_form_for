@@ -19,7 +19,7 @@ Just Rails. But you were going to use that anyway, weren't you?
 
 ```haml
 / supports both vertical and horizontal forms
-= twitter_bootstrap_form_for @user, :html => { :class => 'form-horizontal'}  do |user|
+= twitter_bootstrap_form_for @user, :horizontal => true do |user|
 
   / wraps a section in a fieldset with the provided legend text
   = user.fieldset 'Sign up', :class => 'sign_up' do
