@@ -59,7 +59,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # button.
   #
   def submit(value = nil, options = {})
-    options[:class] ||= 'btn primary'
+    options[:class] ||= 'btn btn-primary'
 
     super value, options
   end
