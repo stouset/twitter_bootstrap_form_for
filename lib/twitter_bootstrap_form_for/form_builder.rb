@@ -88,10 +88,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     define_method input do |attribute, *args, &block|
       options  = args.extract_options!
       label    = args.first.nil? ? '' : args.shift
-      classes  = [ 'input' ]
+      classes  = [ 'controls', 'input' ]
       classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
 
-      self.div_wrapper(attribute) do
+      self.div_wrapper(attribute, :class => 'control-group') do
         template.concat self.label(attribute, label) if label
         template.concat template.content_tag(:div, :class => classes.join(' ')) {
           template.concat super(attribute, *(args << options))
