@@ -94,9 +94,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       self.div_wrapper(attribute, :class => 'control-group') do
         template.concat self.label(attribute, label) if label
         template.concat template.content_tag(:div, :class => classes.join(' ')) {
+          block.call if block.present? and classes.include?('input-prepend')
           template.concat super(attribute, *(args << options))
           template.concat error_span(attribute)
-          block.call if block.present?
+          block.call if block.present? and classes.include?('input-append')
         }
       end
     end
