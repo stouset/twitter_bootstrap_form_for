@@ -14,6 +14,5 @@ Gem::Specification.new do |s|
   s.executables  = `git ls-files`.split("\n").map {|f| f =~ /^bin\/(.*)/ ? $1 : nil }.compact
   s.require_path = 'lib'
 
-  s.add_dependency 'railties',   '~> 2.3'
   s.add_dependency 'actionpack', '~> 2.3'
 end
