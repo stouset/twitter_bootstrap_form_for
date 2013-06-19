@@ -7,4 +7,4 @@ module TwitterBootstrapFormFor
   autoload :VERSION,     'twitter_bootstrap_form_for/version'
 end
 
-TwitterBootstrapFormFor::Railtie # trigger loading the Railtie
+# TwitterBootstrapFormFor::Railtie # trigger loading the Railtie
