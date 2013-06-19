@@ -161,13 +161,18 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
       tag     = add_on.present? ? :div : :span
       classes = [ "input", add_on ].compact.join('-')
 
-      template.content_tag(tag, :class => classes) do
-        template.concat super attribute, *(args << options)
-        template.concat self.error_span(attribute) if self.errors_on?(attribute)
-        block.call if block.present?
+      content = template.capture do
+        s1 = super attribute, *(args + [options])
+        s2 = template.concat self.error_span(attribute) if self.errors_on?(attribute)
+        s3 = block.call if block.present?
+
+        s1.to_s + s2.to_s + s3.to_s
       end
+
+      template.content_tag(tag, content, :class => classes)
     end
   end
+
 
   def check_box(attribute, text, options = {}, checked_value = 1, unchecked_value = 0)
     klasses = _merge_classes 'checkbox', options.delete(:inline) && 'inline'
