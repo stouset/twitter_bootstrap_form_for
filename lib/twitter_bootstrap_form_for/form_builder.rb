@@ -62,11 +62,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           # check boxes and radio buttons should have the label wrapped
           # around the input element itself rather than next to them
           # in the DOM
-          template.concat template.content_tag(:div, :class => 'controls') {
+          return template.concat template.content_tag(:div, :class => 'controls') {
             template.content_tag(:label, options, &block)
           }
-
-          return
       end
 
       template.concat template.content_tag(:div, :class => 'controls') {
@@ -116,9 +114,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     klasses = _merge_classes 'checkbox', (options.delete(:inline) && 'inline')
 
     self.label(nil, nil, :class => klasses) do
-      template.concat super(attribute, options, checked_value, unchecked_value)
-      template.concat text
-      yield if block_given?
+      s1 = super(attribute, options, checked_value, unchecked_value)
+      s2 = text
+      s3 = yield if block_given?
+
+      s1.to_s + s2.to_s + s3.to_s
     end
   end
 
