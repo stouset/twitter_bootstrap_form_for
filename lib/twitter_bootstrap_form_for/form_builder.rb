@@ -152,6 +152,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     classes.compact.join(' ')
   end
 
+  def _merge_classes(string, *classes)
+    string.to_s.split(' ').push(*classes.compact).join(' ')
+  end
+
   def _attribute_name(attribute)
     attribute.to_s.gsub(/[\?\/\-]$/, '')
   end
