@@ -58,6 +58,15 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         when attribute && text then super(attribute, text, options, &nil)
         when attribute         then super(attribute, nil,  options, &nil)
         when text              then template.label_tag(nil, text, options, &nil)
+        else
+          # check boxes and radio buttons should have the label wrapped
+          # around the input element itself rather than next to them
+          # in the DOM
+          template.concat template.content_tag(:div, :class => 'controls') {
+            template.content_tag(:label, options, &block)
+          }
+
+          return
       end
 
       template.concat template.content_tag(:div, :class => 'controls') {
@@ -106,7 +115,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   def check_box(attribute, text = nil, options = {}, checked_value = 1, unchecked_value = 0)
     klasses = _merge_classes 'checkbox', (options.delete(:inline) && 'inline')
 
-    self.label(attribute, :class => klasses) do
+    self.label(nil, nil, :class => klasses) do
       template.concat super(attribute, options, checked_value, unchecked_value)
       template.concat text
       yield if block_given?
@@ -116,7 +125,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   def radio_button(attribute, value, text = nil, options = {})
     klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
 
-    self.label(attribute, :class => klasses) do
+    self.label(nil, nil, :class => klasses) do
       template.concat super(attribute, value, options)
       template.concat text || value.to_s.humanize.titleize
       yield if block_given?
