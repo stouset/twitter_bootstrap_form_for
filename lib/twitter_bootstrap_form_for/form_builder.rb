@@ -103,6 +103,26 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end
   end
 
+  def check_box(attribute, text = nil, options = {}, checked_value = 1, unchecked_value = 0)
+    klasses = _merge_classes 'checkbox', (options.delete(:inline) && 'inline')
+
+    self.label(attribute, :class => klasses) do
+      template.concat super(attribute, options, checked_value, unchecked_value)
+      template.concat text
+      yield if block_given?
+    end
+  end
+
+  def radio_button(attribute, value, text = nil, options = {})
+    klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
+
+    self.label(attribute, :class => klasses) do
+      template.concat super(attribute, value, options)
+      template.concat text || value.to_s.humanize.titleize
+      yield if block_given?
+    end
+  end
+
   protected
 
   def errors_on?(attribute)
@@ -170,27 +190,6 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
       end
 
       template.content_tag(tag, content, :class => classes)
-    end
-  end
-
-
-  def check_box(attribute, text, options = {}, checked_value = 1, unchecked_value = 0)
-    klasses = _merge_classes 'checkbox', options.delete(:inline) && 'inline'
-
-    self.label(attribute, :class => klasses) do
-      template.concat super(attribute, options, checked_value, unchecked_value)
-      template.concat text
-      yield if block_given?
-    end
-  end
-
-  def radio_button(attribute, value, text = nil, options = {})
-    klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
-
-    self.label(attribute, :class => klasses) do
-      template.concat super(attribute, value, options)
-      template.concat text || value.to_s.humanize.titleize
-      yield if block_given?
     end
   end
 
