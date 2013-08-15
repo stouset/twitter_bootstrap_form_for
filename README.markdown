@@ -18,7 +18,9 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
  * Rails 4
  * Bootstrap-sass, pull from branch 3 off github
 
+`
     gem 'bootstrap-sass', :git => 'git://github.com/thomas-mcdonald/bootstrap-sass.git', :branch => '3'
+`
 
 ## Syntax ##
 
