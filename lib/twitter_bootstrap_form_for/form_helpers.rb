@@ -8,12 +8,12 @@ module TwitterBootstrapFormFor::FormHelpers
         options            = args.extract_options!
         options[:layout] ||= 'vertical'
         options[:default_div_class] ||= 'col-lg-10'
-        options[:default_label_class] ||= 'col-lg-2 control-label'
-				if options[:html].nil?
-					options[:html] = {:role => 'form'}
-					options[:html][:class] = "form-#{options[:layout]}" if options[:layout] != 'vertical'
+        options[:default_label_class] ||= if options[:layout] == 'horizontal' then 'col-lg-2 control-label' end
+        if options[:html].nil?
+          options[:html] = {:role => 'form'}
+          options[:html][:class] = "form-#{options[:layout]}" if options[:layout] != 'vertical'
         end
-				options[:builder]  = TwitterBootstrapFormFor::FormBuilder
+        options[:builder]  = TwitterBootstrapFormFor::FormBuilder
 
         # call the original method with our overridden options
         _override_field_error_proc do

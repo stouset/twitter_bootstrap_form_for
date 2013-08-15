@@ -89,13 +89,13 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       
       options  = args.extract_options!
       label    = args.first.nil? ? '' : args.shift
-      if options[:label_class].nil? && @options[:layout] == 'horizontal'
+      if options[:label_class].nil? && @options[:default_label_class].present?
         options[:label_class] = @options[:default_label_class]
       end
 
       self.div_wrapper(attribute, :class => 'form-group') do
         template.concat self.label(attribute, label, class: options[:label_class]) if label
-				options[:class] ||= 'form-control'
+        options[:class] ||= 'form-control'
         if @options[:layout] == 'horizontal'
            classes = []
           if options[:div_class].nil?
