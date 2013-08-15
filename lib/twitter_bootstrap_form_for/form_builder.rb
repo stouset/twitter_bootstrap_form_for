@@ -89,33 +89,24 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       
       options  = args.extract_options!
       label    = args.first.nil? ? '' : args.shift
-      if options[:label_class].nil? && @options[:default_label_class].present?
-        options[:label_class] = @options[:default_label_class]
-      end
 
       self.div_wrapper(attribute, :class => 'form-group') do
+        options[:label_class] ||= @options[:default_label_class]
         template.concat self.label(attribute, label, class: options[:label_class]) if label
         options[:class] ||= 'form-control'
-        if @options[:layout] == 'horizontal'
-           classes = []
-          if options[:div_class].nil?
-            classes <<  @options[:default_div_class]
-          else
-            classes << options[:div_class]
-          end
-          classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
-          template.concat template.content_tag(:div, :class => classes.join(' ')) {
-            block.call if block.present? and classes.include?('input-prepend')
-            template.concat super(attribute, *(args << options))
-            template.concat error_span(attribute)
-            block.call if block.present? and classes.include?('input-append')
-          }
-        else
+        classes = []
+        if options[:div_class].present?
+          classes << options[:div_class]
+        elsif @options[:default_div_class].present?
+          classes <<  @options[:default_div_class]
+        end
+        classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
+        template.concat template.content_tag(:div, :class => classes.join(' ')) {
           block.call if block.present? and classes.include?('input-prepend')
           template.concat super(attribute, *(args << options))
           template.concat error_span(attribute)
           block.call if block.present? and classes.include?('input-append')
-        end
+        }
       end
     end
   end
