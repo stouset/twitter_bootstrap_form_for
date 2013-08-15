@@ -5,8 +5,15 @@ module TwitterBootstrapFormFor::FormHelpers
     module_eval do
       define_method "twitter_bootstrap_#{method}" do |record, *args, &block|
         # add the TwitterBootstrap builder to the options
-        options           = args.extract_options!
-        options[:builder] = TwitterBootstrapFormFor::FormBuilder
+        options            = args.extract_options!
+        options[:layout] ||= 'vertical'
+        options[:default_div_class] ||= 'col-lg-10'
+        options[:default_label_class] ||= 'col-lg-2 control-label'
+				if options[:html].nil?
+					options[:html] = {:role => 'form'}
+					options[:html][:class] = "form-#{options[:layout]}" if options[:layout] != 'vertical'
+        end
+				options[:builder]  = TwitterBootstrapFormFor::FormBuilder
 
         # call the original method with our overridden options
         _override_field_error_proc do
