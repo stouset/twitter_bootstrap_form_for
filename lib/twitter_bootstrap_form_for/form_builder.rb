@@ -50,8 +50,12 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #
   # Wraps action buttons into their own styled container.
   #
-  def actions(&block)
-    template.content_tag(:div, :class => 'actions', &block)
+  def actions(*args, &block)
+		options  = args.extract_options!
+    options[:class] ||= 'col-lg-offset-2 col-lg-10'
+    self.div_wrapper(:div, :class => 'form-group') do
+			template.content_tag(:div, :class => options[:class], &block)
+		end
   end
 
   #
