@@ -38,12 +38,27 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # and the appropriate markup. All toggle buttons should be rendered
   # inside of here, and will not look correct unless they are.
   #
-  def toggles(label = nil, &block)
-    template.content_tag(:div) do
-      template.concat template.content_tag(:label, label)
-      template.concat template.content_tag(:div, :class => "input") {
-        template.content_tag(:ul, :class => "inputs-list") { block.call }
-      }
+  def toggles(*args, &block)
+
+    options  = args.extract_options!
+    label    = args.first.nil? ? '' : args.shift
+
+    # Pull out the label class
+    label_class = options[:label_class] || @options[:default_label_class]
+    options.delete :label_class
+
+    # This set of toggles will conform to either the stacked or inline style
+    options[:style] ||= @options[:default_toggle_style]
+    raise "Invalid style passed to toggles: #{options[:style].to_s}. Must be :stacked or :inline" unless [:stacked, :inline].include?(options[:style])
+    @toggles_style = options[:style]
+
+    # Not necessary, but makes it convenient if we are using the horizontal form style
+    template.content_tag :div, :class => 'form-group' do
+      template.concat self.label(nil, label, :class => label_class) if label
+
+      html_class = @options[:layout] == :horizontal ? @options[:default_div_class] : nil
+			puts "Setting div class to #{html_class}"
+      template.concat template.content_tag(:div, :class => html_class) { block.call }
     end
   end
 
@@ -51,7 +66,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Wraps action buttons into their own styled container.
   #
   def actions(*args, &block)
-    if @options[:layout] == 'horizontal'
+    if @options[:layout] == :horizontal
       options  = args.extract_options!
       options[:class] ||= 'col-lg-offset-2 col-lg-10'
       self.div_wrapper(:div, :class => 'form-group') do
@@ -94,13 +109,15 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
-      
+
       options  = args.extract_options!
       label    = args.first.nil? ? '' : args.shift
+      label_class = options[:label_class] || @options[:default_label_class]
+      options.delete :label_class
 
       self.div_wrapper(attribute, :class => 'form-group') do
-        options[:label_class] ||= @options[:default_label_class]
-        template.concat self.label(attribute, label, class: options[:label_class]) if label
+        template.concat self.label(attribute, label, :class => label_class) if label
+
         options[:class] ||= 'form-control'
         classes = []
         if options[:div_class].present?
@@ -121,21 +138,20 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
-      label       = args.first.nil? ? '' : args.shift
+      
+			label       = args.first.nil? ? '' : args.shift
       target      = self.object_name.to_s + '_' + attribute.to_s
       label_attrs = toggle == :check_box ? { :for => target } : {}
 
-      template.content_tag(:li) do
-        template.concat template.content_tag(:label, label_attrs) {
-          template.concat super(attribute, *args)
-          template.concat ' ' # give the input and span some room
-          template.concat template.content_tag(:span, label)
-        }
-        if toggle == :check_box
-          template.concat template.content_tag(:div, :class => "has-error") {
-            template.concat error_span(attribute)
-          } if errors_on?(attribute)
-        end
+      template.concat template.content_tag(:label, label_attrs) {
+        template.concat super(attribute, *args)
+        template.concat ' ' # give the input and span some room
+        template.concat template.content_tag(:span, label)
+      }
+      if toggle == :check_box
+        template.concat template.content_tag(:div, :class => "has-error") {
+          template.concat error_span(attribute)
+        } if errors_on?(attribute)
       end
     end
   end
