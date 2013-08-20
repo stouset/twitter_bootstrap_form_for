@@ -57,7 +57,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       template.concat self.label(nil, label, :class => label_class) if label
 
       html_class = @options[:layout] == :horizontal ? @options[:default_div_class] : nil
-			puts "Setting div class to #{html_class}"
       template.concat template.content_tag(:div, :class => html_class) { block.call }
     end
   end
@@ -139,7 +138,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
       
-			label       = args.first.nil? ? '' : args.shift
+      label       = args.first.nil? ? '' : args.shift
       target      = self.object_name.to_s + '_' + attribute.to_s
       label_attrs = toggle == :check_box ? { :for => target } : {}
 

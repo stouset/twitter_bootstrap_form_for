@@ -7,9 +7,9 @@ module TwitterBootstrapFormFor::FormHelpers
         # add the TwitterBootstrap builder to the options
         options            = args.extract_options!
         options[:layout] ||= :vertical
-				raise "Specified form layout #{options[:layout].to_s} is invalid. Must be one of :vertical, :horizontal, or :inline." unless [:vertical, :horizontal, :inline].include?(options[:layout])
-				options[:default_toggle_style] = :stacked
-				if options[:layout] == :horizontal
+        raise "Specified form layout #{options[:layout].to_s} is invalid. Must be one of :vertical, :horizontal, or :inline." unless [:vertical, :horizontal, :inline].include?(options[:layout])
+        options[:default_toggle_style] = :stacked
+        if options[:layout] == :horizontal
           options[:default_div_class] ||= 'col-lg-10'
           options[:default_label_class] ||= 'col-lg-2 control-label'
         end
