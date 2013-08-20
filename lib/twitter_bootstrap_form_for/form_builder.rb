@@ -54,9 +54,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
     # Not necessary, but makes it convenient if we are using the horizontal form style
     template.content_tag :div, :class => 'form-group' do
-      template.concat self.label(nil, label, :class => label_class) if label
+      template.concat self.label(nil, label, :class => label_class) if label.present?
 
-      html_class = @options[:layout] == :horizontal ? @options[:default_div_class] : nil
+			if @options[:layout] == :horizontal
+        html_class = label.present? ? @options[:default_div_class] : 'col-lg-offset-2 col-lg-10'
+      end
       template.concat template.content_tag(:div, :class => html_class) { block.call }
     end
   end
