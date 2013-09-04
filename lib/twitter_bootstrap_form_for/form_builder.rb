@@ -116,7 +116,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     self.label(nil, nil, :class => klasses) do
       s1 = super(attribute, options, checked_value, unchecked_value)
       s2 = text
-      s3 = template.with_output_buffer { yield } if block_given?
+      s3 = yield if block_given?
 
       s1.to_s + s2.to_s + s3.to_s
     end
@@ -197,7 +197,7 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
       content = template.capture do
         s1 = super attribute, *(args + [options])
         s2 = template.concat self.error_span(attribute) if self.errors_on?(attribute)
-        s3 = block.call if block.present?
+        s3 = template.with_output_buffer { block.call } if block.present?
 
         s1.to_s + s2.to_s + s3.to_s
       end
