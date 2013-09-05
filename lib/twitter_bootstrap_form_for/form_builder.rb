@@ -176,9 +176,11 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
       classes = [ "input", add_on ].compact.join('-')
 
       template.concat template.content_tag(tag, :class => classes) {
-        template.concat super attribute, *(args << options)
-        template.concat self.error_span(attribute) if self.errors_on?(attribute)
-        block.call if block.present?
+        template.with_output_buffer {
+          template.concat super attribute, *(args << options)
+          template.concat self.error_span(attribute) if self.errors_on?(attribute)
+          block.call if block.present?
+        }
       }
     end
   end
