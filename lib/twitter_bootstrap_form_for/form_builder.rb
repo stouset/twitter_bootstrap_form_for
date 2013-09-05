@@ -106,13 +106,13 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
 
   TOGGLES.each do |toggle|
-    define_method input do |attribute, *args, &block|
+    define_method toggle do |attribute, *args, &block|
       template.with_output_buffer do
         self.fields_for(
           self.object_name,
           self.object,
           self.options.merge(:builder => TwitterBootstrapFormFor::FormControls)
-        ) {|controls| controls.send(input, *args, &block) }
+        ) {|controls| controls.send(toggle, *args, &block) }
       end
     end
   end
