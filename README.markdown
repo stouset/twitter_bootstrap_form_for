@@ -15,21 +15,6 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 
 Just Rails. But you were going to use that anyway, weren't you?
 
-## Installation ##
-
-```ruby
-# Gemfile
-gem 'twitter_bootstrap_form_for', :github => "stouset/twitter_bootstrap_form_for", :branch => "rails-2.3"
-```
-
-
-```ruby
-# environment.rb
-config.after_initialize do
-  ActionView::Base.send :include, TwitterBootstrapFormFor::FormHelpers
-end
-```
-
 ## Syntax ##
 
 ```haml

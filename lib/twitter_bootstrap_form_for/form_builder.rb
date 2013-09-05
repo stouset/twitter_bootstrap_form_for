@@ -58,13 +58,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         when attribute && text then super(attribute, text, options, &nil)
         when attribute         then super(attribute, nil,  options, &nil)
         when text              then template.label_tag(nil, text, options, &nil)
-        else
-          # check boxes and radio buttons should have the label wrapped
-          # around the input element itself rather than next to them
-          # in the DOM
-          return template.concat template.content_tag(:div, :class => 'controls') {
-            template.content_tag(:label, options, &block)
-          }
       end
 
       template.concat template.content_tag(:div, :class => 'controls') {
@@ -110,28 +103,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end
   end
 
-  def check_box(attribute, text = nil, options = {}, checked_value = 1, unchecked_value = 0)
-    klasses = _merge_classes 'checkbox', (options.delete(:inline) && 'inline')
-
-    self.label(nil, nil, :class => klasses) do
-      s1 = super(attribute, options, checked_value, unchecked_value)
-      s2 = text
-      s3 = yield if block_given?
-
-      s1.to_s + s2.to_s + s3.to_s
-    end
-  end
-
-  def radio_button(attribute, value, text = nil, options = {})
-    klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
-
-    self.label(nil, nil, :class => klasses) do
-      template.concat super(attribute, value, options)
-      template.concat text || value.to_s.humanize.titleize
-      yield if block_given?
-    end
-  end
-
   protected
 
   def errors_on?(attribute)
@@ -159,10 +130,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   def _wrapper_classes(attribute, *classes)
     classes.push 'error' if attribute and self.errors_on?(attribute)
     classes.compact.join(' ')
-  end
-
-  def _merge_classes(string, *classes)
-    string.to_s.split(' ').push(*classes.compact).join(' ')
   end
 
   def _attribute_name(attribute)
@@ -194,15 +161,31 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
       tag     = add_on.present? ? :div : :span
       classes = [ "input", add_on ].compact.join('-')
 
-      content = template.capture do
-        s1 = super attribute, *(args + [options])
-        s2 = template.concat self.error_span(attribute) if self.errors_on?(attribute)
-        s3 = template.with_output_buffer { block.call } if block.present?
-
-        s1.to_s + s2.to_s + s3.to_s
+      template.content_tag(tag, :class => classes) do
+        template.concat super attribute, *(args << options)
+        template.concat self.error_span(attribute) if self.errors_on?(attribute)
+        block.call if block.present?
       end
+    end
+  end
 
-      template.content_tag(tag, content, :class => classes)
+  def check_box(attribute, text, options = {}, checked_value = 1, unchecked_value = 0)
+    klasses = _merge_classes 'checkbox', options.delete(:inline) && 'inline'
+
+    self.label(attribute, :class => klasses) do
+      template.concat super(attribute, options, checked_value, unchecked_value)
+      template.concat text
+      yield if block_given?
+    end
+  end
+
+  def radio_button(attribute, value, text = nil, options = {})
+    klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
+
+    self.label(attribute, :class => klasses) do
+      template.concat super(attribute, value, options)
+      template.concat text || value.to_s.humanize.titleize
+      yield if block_given?
     end
   end
 
