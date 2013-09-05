@@ -112,7 +112,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           self.object_name,
           self.object,
           self.options.merge(:builder => TwitterBootstrapFormFor::FormControls)
-        ) {|controls| controls.send(toggle, *args, &block) }
+        ) {|controls| controls.send(toggle, attribute, *args, &block) }
       end
     end
   end
