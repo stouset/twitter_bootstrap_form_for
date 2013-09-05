@@ -61,12 +61,14 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       end
 
       template.concat template.content_tag(:div, :class => 'controls') {
-        template.fields_for(
-          self.object_name,
-          self.object,
-          self.options.merge(:builder => TwitterBootstrapFormFor::FormControls),
-          &block
-        )
+        template.with_output_buffer {
+          template.fields_for(
+            self.object_name,
+            self.object,
+            self.options.merge(:builder => TwitterBootstrapFormFor::FormControls),
+            &block
+          )
+        }
       }
     end
   end
@@ -172,21 +174,21 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
   def check_box(attribute, text, options = {}, checked_value = 1, unchecked_value = 0)
     klasses = _merge_classes 'checkbox', options.delete(:inline) && 'inline'
 
-    self.label(attribute, :class => klasses) do
-      template.concat super(attribute, options, checked_value, unchecked_value)
-      template.concat text
-      yield if block_given?
-    end
+    input = super(attribute, options, checked_value, unchecked_value)
+    title = text || value.to_s.humanize.titleize
+    extra = block_given? ? yield : ''
+
+    self.label(attribute, input + title + extra, :class => klasses)
   end
 
   def radio_button(attribute, value, text = nil, options = {})
     klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
 
-    self.label(attribute, :class => klasses) do
-      template.concat super(attribute, value, options)
-      template.concat text || value.to_s.humanize.titleize
-      yield if block_given?
-    end
+    input = super(attribute, value, options)
+    title = text || value.to_s.humanize.titleize
+    extra = block_given? ? yield : ''
+
+    self.label(attribute, input + title + extra, :class => klasses)
   end
 
   protected
