@@ -100,7 +100,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       text    = args.any? ? args.shift : ''
 
       self.label(attribute, text) do |builder|
-        builder.send(input, attribute, *(args << options), &block)
+        template.concat builder.send(input, attribute, *(args << options), &block)
       end
     end
   end
@@ -112,7 +112,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           self.object_name,
           self.object,
           self.options.merge(:builder => TwitterBootstrapFormFor::FormControls)
-        ) {|controls| controls.send(toggle, attribute, *args, &block) }
+        ) {|controls| template.concat controls.send(toggle, attribute, *args, &block) }
       end
     end
   end
@@ -175,7 +175,7 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
       tag     = add_on.present? ? :div : :span
       classes = [ "input", add_on ].compact.join('-')
 
-      template.concat template.content_tag(tag, :class => classes) {
+      template.content_tag(tag, :class => classes) {
         template.with_output_buffer {
           template.concat super attribute, *(args << options)
           template.concat self.error_span(attribute) if self.errors_on?(attribute)
