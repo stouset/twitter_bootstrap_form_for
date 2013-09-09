@@ -46,31 +46,45 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #is passed, uses that as the text for the label; otherwise humanizes the
   # +attribute+ name.
   #
-  def label(attribute, text = '', options = {}, &block)
+  def label(attribute, text = '', options = {})
     text, attribute = attribute, nil if attribute.kind_of? String
+    options         = { :class => 'control-label' }.merge(options)
 
-    options = { :class => 'control-label' }.merge(options)
+    self.control_group(attribute, options) do
+      template.with_output_buffer do
+        template.concat case
+          when attribute && text then super(attribute, text, options, &nil)
+          when attribute         then super(attribute, nil,  options, &nil)
+          when text              then template.label_tag(nil, text, options, &nil)
+        end
+
+        template.concat yield
+      end
+    end
+  end
+
+  def toggles(text = '', options = {}, &block)
+    self.label(nil, text, options, &block)
+  end
+
+  def control_group(attribute, options = {}, &block)
     id      = _wrapper_id      attribute, 'control_group'
     classes = _wrapper_classes attribute, 'control-group'
 
-    template.content_tag(:div, :id => id, :class => classes) do
-      template.concat case
-        when attribute && text then super(attribute, text, options, &nil)
-        when attribute         then super(attribute, nil,  options, &nil)
-        when text              then template.label_tag(nil, text, options, &nil)
-      end
+    template.content_tag(:div, :id => id, :class => classes, &block)
+  end
 
-      template.concat template.content_tag(:div, :class => 'controls') {
-        template.with_output_buffer {
-          template.fields_for(
-            self.object_name,
-            self.object,
-            self.options.merge(:builder => TwitterBootstrapFormFor::FormControls),
-            &block
-          )
-        }
+  def controls(&block)
+    template.content_tag(:div, :class => 'controls') {
+      template.with_output_buffer {
+        template.fields_for(
+          self.object_name,
+          self.object,
+          self.options.merge(:builder => TwitterBootstrapFormFor::FormControls),
+          &block
+        )
       }
-    end
+    }
   end
 
   #
@@ -99,20 +113,18 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       options = args.extract_options!
       text    = args.any? ? args.shift : ''
 
-      self.label(attribute, text) do |builder|
-        template.concat builder.send(input, attribute, *(args << options), &block)
+      self.label(attribute, text) do
+        self.controls do |builder|
+          template.concat builder.send(input, attribute, *(args << options), &block)
+        end
       end
     end
   end
 
   TOGGLES.each do |toggle|
-    define_method toggle do |attribute, *args, &block|
-      template.with_output_buffer do
-        self.fields_for(
-          self.object_name,
-          self.object,
-          self.options.merge(:builder => TwitterBootstrapFormFor::FormControls)
-        ) {|controls| template.concat controls.send(toggle, attribute, *args, &block) }
+    define_method toggle do |*args, &block|
+      self.controls do |builder|
+        template.concat builder.send(toggle, *args, &block)
       end
     end
   end
