@@ -197,22 +197,22 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
     end
   end
 
-  def check_box(attribute, text, options = {}, checked_value = 1, unchecked_value = 0)
+  def check_box(attribute, text, options = {}, checked_value = 1, unchecked_value = 0, &block)
     klasses = _merge_classes 'checkbox', options.delete(:inline) && 'inline'
 
     input = super(attribute, options, checked_value, unchecked_value)
     title = text || value.to_s.humanize.titleize
-    extra = block_given? ? yield : ''
+    extra = block.present? ? template.with_output_buffer(&block) : ''
 
     self.label(attribute, input + title + extra, :class => klasses)
   end
 
-  def radio_button(attribute, value, text = nil, options = {})
+  def radio_button(attribute, value, text = nil, options = {}, &block)
     klasses = _merge_classes 'radio', options.delete(:inline) && 'inline'
 
     input = super(attribute, value, options)
     title = text || value.to_s.humanize.titleize
-    extra = block_given? ? yield : ''
+    extra = block.present? ? template.with_output_buffer(&block) : ''
 
     self.label(attribute, input + title + extra, :class => klasses)
   end
