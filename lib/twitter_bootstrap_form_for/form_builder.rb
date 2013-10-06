@@ -38,20 +38,44 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # and the appropriate markup. All toggle buttons should be rendered
   # inside of here, and will not look correct unless they are.
   #
-  def toggles(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
-      template.concat template.content_tag(:label, label)
-      template.concat template.content_tag(:div, :class => "input") {
-        template.content_tag(:ul, :class => "inputs-list") { block.call }
-      }
+  def toggles(*args, &block)
+
+    options  = args.extract_options!
+    label    = args.first.nil? ? '' : args.shift
+
+    # Pull out the label class
+    label_class = options[:label_class] || @options[:default_label_class]
+    options.delete :label_class
+
+    # This set of toggles will conform to either the stacked or inline style
+    options[:style] ||= @options[:default_toggle_style]
+    raise "Invalid style passed to toggles: #{options[:style].to_s}. Must be :stacked or :inline" unless [:stacked, :inline].include?(options[:style])
+    @toggles_style = options[:style]
+
+    # Not necessary, but makes it convenient if we are using the horizontal form style
+    template.content_tag :div, :class => 'form-group' do
+      template.concat self.label(nil, label, :class => label_class) if label.present?
+
+			if @options[:layout] == :horizontal
+        html_class = label.present? ? @options[:default_div_class] : 'col-lg-offset-2 col-lg-10'
+      end
+      template.concat template.content_tag(:div, :class => html_class) { block.call }
     end
   end
 
   #
   # Wraps action buttons into their own styled container.
   #
-  def actions(&block)
-    template.content_tag(:div, :class => 'actions', &block)
+  def actions(*args, &block)
+    if @options[:layout] == :horizontal
+      options  = args.extract_options!
+      options[:class] ||= 'col-lg-offset-2 col-lg-10'
+      self.div_wrapper(:div, :class => 'form-group') do
+        template.content_tag(:div, :class => options[:class], &block)
+      end
+    else
+      block.call
+    end
   end
 
   #
@@ -69,7 +93,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # to the supplied block.
   #
   def inline(label = nil, &block)
-    template.content_tag(:div, :class => 'clearfix') do
+    template.content_tag(:div) do
       template.concat template.content_tag(:label, label) if label.present?
       template.concat template.content_tag(:div, :class => 'input') {
         template.content_tag(:div, :class => 'inline-inputs') do
@@ -86,13 +110,23 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
+
       options  = args.extract_options!
       label    = args.first.nil? ? '' : args.shift
-      classes  = [ 'controls', 'input' ]
-      classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
+      label_class = options[:label_class] || @options[:default_label_class]
+      options.delete :label_class
 
-      self.div_wrapper(attribute, :class => 'control-group') do
-        template.concat self.label(attribute, label) if label
+      self.div_wrapper(attribute, :class => 'form-group') do
+        template.concat self.label(attribute, label, :class => label_class) if label
+
+        options[:class] ||= 'form-control'
+        classes = []
+        if options[:div_class].present?
+          classes << options[:div_class]
+        elsif @options[:default_div_class].present?
+          classes <<  @options[:default_div_class]
+        end
+        classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
         template.concat template.content_tag(:div, :class => classes.join(' ')) {
           block.call if block.present? and classes.include?('input-prepend')
           template.concat super(attribute, *(args << options))
@@ -105,21 +139,20 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
+      
       label       = args.first.nil? ? '' : args.shift
       target      = self.object_name.to_s + '_' + attribute.to_s
       label_attrs = toggle == :check_box ? { :for => target } : {}
 
-      template.content_tag(:li) do
-        template.concat template.content_tag(:label, label_attrs) {
-          template.concat super(attribute, *args)
-          template.concat ' ' # give the input and span some room
-          template.concat template.content_tag(:span, label)
-        }
-        if toggle == :check_box
-          template.concat template.content_tag(:div, :class => "clearfix error") {
-            template.concat error_span(attribute)
-          } if errors_on?(attribute)
-        end
+      template.concat template.content_tag(:label, label_attrs) {
+        template.concat super(attribute, *args)
+        template.concat ' ' # give the input and span some room
+        template.concat template.content_tag(:span, label)
+      }
+      if toggle == :check_box
+        template.concat template.content_tag(:div, :class => "has-error") {
+          template.concat error_span(attribute)
+        } if errors_on?(attribute)
       end
     end
   end
@@ -133,7 +166,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #
   def div_wrapper(attribute, options = {}, &block)
     options[:id]    = _wrapper_id      attribute, options[:id]
-    options[:class] = _wrapper_classes attribute, options[:class], 'clearfix'
+    options[:class] = _wrapper_classes attribute, options[:class]
 
     template.content_tag :div, options, &block
   end
@@ -176,7 +209,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #
   def _wrapper_classes(attribute, *classes)
     classes.compact.tap do |klasses|
-      klasses.push 'error' if self.errors_on?(attribute)
+      klasses.push 'has-error' if self.errors_on?(attribute)
     end.join(' ')
   end
 

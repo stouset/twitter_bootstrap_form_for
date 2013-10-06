@@ -1,6 +1,8 @@
 Twitter Bootstrap Form For
 ==========================
 
+*_WARNING! This is for Rails 4 and Bootstrap 3 (current in RC)._*
+
 `twitter_bootstrap_form_for` is a Rails FormBuilder DSL that, like Formtastic,
 makes it easier to create semantically awesome, readily-stylable, and
 wonderfully accessible HTML forms in your Rails applications. It abides by
@@ -13,18 +15,23 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 
 ## Dependencies ##
 
-Just Rails. But you were going to use that anyway, weren't you?
+ * Rails 4
+ * Bootstrap-sass, pull from branch 3 off github
+
+`
+    gem 'bootstrap-sass', :git => 'git://github.com/thomas-mcdonald/bootstrap-sass.git', :branch => '3'
+`
 
 ## Syntax ##
 
 ```haml
-= twitter_bootstrap_form_for @user do |user|
+= twitter_bootstrap_form_for @user, layout: 'vertical (default) OR horizontal OR inline', default_div_class: 'col-lg-10 (default)', role: 'form (default)' do |user|
 
   / wraps a section in a fieldset with the provided legend text
   = user.inputs 'Sign up', :class => 'sign_up' do
 
-    / generates a standard email field
-    = user.email_field :email, :placeholder => 'me@example.com'
+    / generates a standard email field; also showing overriding the div_class around the input element on a horizontal form
+    = user.email_field :email, :placeholder => 'me@example.com', div_class: 'col-md-6'
 
     / generates a password field with a descriptive aside
     = user.password_field :password do
