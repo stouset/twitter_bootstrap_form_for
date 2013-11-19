@@ -5,18 +5,26 @@ module TwitterBootstrapFormFor::FormHelpers
     module_eval do
       define_method "twitter_bootstrap_#{method}" do |record, *args, &block|
         # add the TwitterBootstrap builder to the options
-        options            = args.extract_options!
+        options = args.extract_options!
+
         options[:layout] ||= :vertical
         raise "Specified form layout #{options[:layout].to_s} is invalid. Must be one of :vertical, :horizontal, or :inline." unless [:vertical, :horizontal, :inline].include?(options[:layout])
+
         options[:default_toggle_style] = :stacked
         if options[:layout] == :horizontal
           options[:default_div_class] ||= 'col-lg-10'
           options[:default_label_class] ||= 'col-lg-2 control-label'
         end
-        if options[:html].nil?
-          options[:html] = {:role => 'form'}
-          options[:html][:class] = "form-#{options[:layout]}" if options[:layout] != 'vertical'
-        end
+
+        # Add Bootstrap role and form class.
+        html_options = {}
+        html_options[:role] = 'form'
+        html_options[:class] = "form-#{options[:layout]}" if options[:layout] != 'vertical'
+
+        # Merge Bootstrap html options with html options from the form_for call.
+        options[:html] ||= {}
+        options[:html].merge!(html_options){|key, first, second| "#{first} #{second}" }
+
         options[:builder]  = TwitterBootstrapFormFor::FormBuilder
 
         # call the original method with our overridden options

@@ -14,6 +14,11 @@ Gem::Specification.new do |s|
   s.executables  = `git ls-files`.split("\n").map {|f| f =~ /^bin\/(.*)/ ? $1 : nil }.compact
   s.require_path = 'lib'
 
-  s.add_dependency 'railties',   '~> 4'
-  s.add_dependency 'actionpack', '~> 4'
+  s.add_dependency "rails", "~> 4.0.0"
+
+  s.add_development_dependency "sass-rails", "~> 4.0.0"
+  s.add_development_dependency "haml", "~> 4.0.3"
+  s.add_development_dependency "haml-rails", "~> 0.4"
+  s.add_development_dependency "anjlab-bootstrap-rails", '~> 3.0.0'
+  s.add_development_dependency "sqlite3"
 end
