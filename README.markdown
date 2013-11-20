@@ -68,7 +68,7 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 
 That code produces the following output, with no custom stylesheets.
 
-![](https://github.com/stouset/twitter_bootstrap_form_for/raw/master/examples/screenshot.png)
+![](examples/screenshot.png?raw=true)
 
 That's it. All of the Rails field helpers you know and love work just like
 their normal FormBuilder counterparts, but with minor extensions to expose
