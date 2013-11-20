@@ -1,7 +1,7 @@
 require 'twitter_bootstrap_form_for'
 require 'action_view/helpers'
 
-class TwitterBootstrapFormFor::TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
+class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   include TwitterBootstrapFormFor::FormHelpers
 
   attr_reader :template
