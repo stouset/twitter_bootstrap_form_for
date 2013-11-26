@@ -309,10 +309,14 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       options[:class] = "form-control #{options[:class]}".strip
 
       # Inputs like the date select expect html options like class or id as a
-      # separate parameter. Simply add all options (inlcuding the input class form-control)
+      # separate parameter. Simply add all options (including the input class form-control)
       # to the html_options parameter.
       html_options = options.delete(:html) || {}
-      html_options.merge!(options) if %w(date_select time_select datetime_select).include?(input.to_s)
+      html_options.merge!(options) if %w(date_select time_select datetime_select
+        select_datetime select_date select_time select_second select_minute
+        select_hour select_day select_month select_year select collection_select
+        grouped_collection_select time_zone_select collection_radio_buttons
+        collection_check_boxes collection_radio_buttons).include?(input.to_s)
 
       div_classes = []
       if options[:div_class].present?
