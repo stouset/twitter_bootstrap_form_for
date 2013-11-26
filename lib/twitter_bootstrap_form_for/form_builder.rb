@@ -290,7 +290,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
-      type = input
       options = args.extract_options!
 
       label = args.first.nil? ? '' : args.shift
