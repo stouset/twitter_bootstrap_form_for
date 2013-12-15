@@ -112,9 +112,10 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     define_method input do |attribute, *args, &block|
 
       options  = args.extract_options!
-      label    = args.first.nil? ? '' : args.shift
-      label_class = options[:label_class] || @options[:default_label_class]
-      options.delete :label_class
+      args << {} if input.to_s.match(/select/) and not args.last.is_a?(Hash)
+
+      label    = options.delete(:label) || ''
+      label_class = options.delete(:label_class) || @options[:default_label_class]
 
       self.div_wrapper(attribute, :class => 'form-group') do
         template.concat self.label(attribute, label, :class => label_class) if label
@@ -128,6 +129,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         end
         classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
         template.concat template.content_tag(:div, :class => classes.join(' ')) {
+
           block.call if block.present? and classes.include?('input-prepend')
           template.concat super(attribute, *(args << options))
           template.concat error_span(attribute)
@@ -140,7 +142,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args, &block|
       
-      label       = args.first.nil? ? '' : args.shift
+      label       = options.delete(:label) || ''
       target      = self.object_name.to_s + '_' + attribute.to_s
       label_attrs = toggle == :check_box ? { :for => target } : {}
 
