@@ -89,6 +89,17 @@ simple:
   * the last options hash accepts an `:add_on` key
   * if a block is passed, the HTML it outputs is placed immediately after the input
 
+## Configuration ##
+
+Default class applied on label and div can be customized. Setup a file `config/initializers/twitter_bootstrap_form_for.rb` e.g.:
+
+```ruby
+TwitterBootstrapFormFor::FormBuilder.label_class = 'col-md-2 control-label'
+TwitterBootstrapFormFor::FormBuilder.div_class = 'col-md-6'
+TwitterBootstrapFormFor::FormBuilder.div_labelless_class = 'col-md-offset-2 col-md-6'
+TwitterBootstrapFormFor::FormBuilder.action_class = 'col-md-offset-2 col-md-6'
+```
+
 ## Known Bugs ##
 
   - inline fields don't receive error markup ([issue #28])

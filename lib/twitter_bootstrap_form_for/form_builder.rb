@@ -2,6 +2,14 @@ require 'twitter_bootstrap_form_for'
 require 'action_view/helpers'
 
 class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
+
+  cattr_accessor :label_class, :div_class, :div_labelless_class, :action_class
+
+  self.label_class = 'col-lg-2 control-label'
+  self.div_class = 'col-lg-10'
+  self.div_labelless_class = 'col-lg-offset-2 col-lg-10'
+  self.action_class = 'col-lg-offset-2 col-lg-10'
+
   include TwitterBootstrapFormFor::FormHelpers
 
   attr_reader :template
@@ -57,7 +65,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       template.concat self.label(nil, label, :class => label_class) if label.present?
 
 			if @options[:layout] == :horizontal
-        html_class = label.present? ? @options[:default_div_class] : 'col-lg-offset-2 col-lg-10'
+        html_class = label.present? ? @options[:default_div_class] : self.div_labelless_class
       end
       template.concat template.content_tag(:div, :class => html_class) { block.call }
     end
@@ -69,7 +77,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   def actions(*args, &block)
     if @options[:layout] == :horizontal
       options  = args.extract_options!
-      options[:class] ||= 'col-lg-offset-2 col-lg-10'
+      options[:class] ||= self.action_class
       self.div_wrapper(:div, :class => 'form-group') do
         template.content_tag(:div, :class => options[:class], &block)
       end
