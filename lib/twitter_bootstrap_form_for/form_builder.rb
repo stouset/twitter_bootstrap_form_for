@@ -228,7 +228,8 @@ class TwitterBootstrapFormFor::FormControls < ActionView::Helpers::FormBuilder
   end
 
   def errors_for(attribute)
-    self.object.errors[attribute].try(:join, ', ')
+    errors = self.object.errors[attribute]
+    errors.respond_to?(:join) ? errors.join(', ') : errors
   end
 
   def errors_on?(attribute)
