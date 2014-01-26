@@ -134,7 +134,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         elsif @options[:default_div_class].present?
           classes <<  @options[:default_div_class]
         end
-        classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
+        classes << ('input-' + (options.delete(:add_on) || :append).to_s) if block.present?
         template.concat template.content_tag(:div, :class => classes.join(' ')) {
           block.call if block.present? and classes.include?('input-prepend')
           input_group = options.delete(:input_group)

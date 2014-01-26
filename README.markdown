@@ -42,7 +42,9 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
     / a field with a custom label
     = user.password_field :password_confirmation, 'Confirm Password'
 
-    / input fields with custom add-ons
+    / input fields with custom add-ons, append by default
+    = user.text_field :twitter_id, 'Twitter', :class => 'medium' do
+      %span.add-on @
     = user.text_field :twitter_id, 'Twitter', :class => 'medium', :add_on => :prepend do
       %span.add-on @
 
