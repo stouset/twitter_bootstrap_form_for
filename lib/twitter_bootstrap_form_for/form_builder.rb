@@ -137,7 +137,18 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
         template.concat template.content_tag(:div, :class => classes.join(' ')) {
           block.call if block.present? and classes.include?('input-prepend')
-          template.concat super(attribute, *(args << options))
+          input_group = options.delete(:input_group)
+          tag = super(attribute, *(args << options))
+          if input_group
+            template.concat template.content_tag(:div, :class => 'input-group') {
+              template.concat tag
+              template.concat template.content_tag(:span, :class => 'input-group-addon') {
+                template.concat input_group
+              }
+            }
+          else
+            template.concat tag
+          end
           template.concat error_span(attribute)
           block.call if block.present? and classes.include?('input-append')
         }

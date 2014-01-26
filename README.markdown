@@ -46,6 +46,9 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
     = user.text_field :twitter_id, 'Twitter', :class => 'medium', :add_on => :prepend do
       %span.add-on @
 
+    / input fields with input-group
+    = user.text_field :twitter_id, 'Twitter', :class => 'medium', :input-group => '€'
+
     / select fields now have the second parameter as a label
     = user.date_select :born_on, 'Born on', {}, :class => 'small'
 
