@@ -2,6 +2,14 @@ require 'twitter_bootstrap_form_for'
 require 'action_view/helpers'
 
 class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
+
+  cattr_accessor :label_class, :div_class, :div_labelless_class, :action_class
+
+  self.label_class = 'col-lg-2 control-label'
+  self.div_class = 'col-lg-10'
+  self.div_labelless_class = 'col-lg-offset-2 col-lg-10'
+  self.action_class = 'col-lg-offset-2 col-lg-10'
+
   include TwitterBootstrapFormFor::FormHelpers
 
   attr_reader :template
@@ -57,7 +65,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       template.concat self.label(nil, label, :class => label_class) if label.present?
 
 			if @options[:layout] == :horizontal
-        html_class = label.present? ? @options[:default_div_class] : 'col-lg-offset-2 col-lg-10'
+        html_class = label.present? ? @options[:default_div_class] : self.div_labelless_class
       end
       template.concat template.content_tag(:div, :class => html_class) { block.call }
     end
@@ -69,7 +77,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   def actions(*args, &block)
     if @options[:layout] == :horizontal
       options  = args.extract_options!
-      options[:class] ||= 'col-lg-offset-2 col-lg-10'
+      options[:class] ||= self.action_class
       self.div_wrapper(:div, :class => 'form-group') do
         template.content_tag(:div, :class => options[:class], &block)
       end
@@ -126,10 +134,21 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         elsif @options[:default_div_class].present?
           classes <<  @options[:default_div_class]
         end
-        classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
+        classes << ('input-' + (options.delete(:add_on) || :append).to_s) if block.present?
         template.concat template.content_tag(:div, :class => classes.join(' ')) {
           block.call if block.present? and classes.include?('input-prepend')
-          template.concat super(attribute, *(args << options))
+          input_group = options.delete(:input_group)
+          tag = super(attribute, *(args << options))
+          if input_group
+            template.concat template.content_tag(:div, :class => 'input-group') {
+              template.concat tag
+              template.concat template.content_tag(:span, :class => 'input-group-addon') {
+                template.concat input_group
+              }
+            }
+          else
+            template.concat tag
+          end
           template.concat error_span(attribute)
           block.call if block.present? and classes.include?('input-append')
         }
