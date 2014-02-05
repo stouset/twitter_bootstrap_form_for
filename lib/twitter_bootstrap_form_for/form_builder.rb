@@ -112,6 +112,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     define_method input do |attribute, *args, &block|
 
       options  = args.extract_options!
+      html_options = options.delete(:html)
       label    = args.first.nil? ? '' : args.shift
       label_class = options[:label_class] || @options[:default_label_class]
       options.delete :label_class
@@ -129,7 +130,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
         template.concat template.content_tag(:div, :class => classes.join(' ')) {
           block.call if block.present? and classes.include?('input-prepend')
-          template.concat super(attribute, *(args << options))
+          final_args = args << options
+          final_args << html_options if html_options
+          template.concat super(attribute, *final_args)
           template.concat error_span(attribute)
           block.call if block.present? and classes.include?('input-append')
         }
@@ -142,7 +145,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       
       label       = args.first.nil? ? '' : args.shift
       target      = self.object_name.to_s + '_' + attribute.to_s
-      label_attrs = toggle == :check_box ? { :for => target } : {}
+      label_attrs = toggle == :check_box ? { :for => target, :class => "checkbox" } : { :class => "radio" }
 
       template.concat template.content_tag(:label, label_attrs) {
         template.concat super(attribute, *args)
