@@ -72,6 +72,16 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
 
   #
+  # Renders a link with default classes to style it as a form button.
+  #
+  def link_button(value = nil, href = nil, options = {})
+    template.content_tag :a, value, {
+      :class => 'btn',
+      :href => href
+    }.merge(options)
+  end
+
+  #
   # Renders a button with default classes to style it as a form button.
   #
   def button(value = nil, options = {})
