@@ -24,14 +24,15 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
   / wraps a section in a fieldset with the provided legend text
   = f.inputs 'Sign up', class: 'sign_up' do
 
-    / generate a standard email field
-    / also showing overriding the div_class around the input element on a horizontal form
+    / generate a email field
     = f.email_field :email
 
-    / generate a field for the user name with a custom label, a placeholder text,
-    / a bootstrap class to make the form field larger and overwrites the
-    / default class on the input element wrapper in horizontal forms.
-    = f.text_field :name, 'Username', placeholder: 'Choose your user name.', class: 'input-lg', div_class: 'col-md-6'
+    / generate a text field with a custom label, a placeholder text, custom attributes
+    / (class and id) for the input element, a custom class for the wrapper around the input element
+    / and custom attributes for the form-group wrapper.
+    = f.text_field :name, 'Username', placeholder: 'Choose your user name.', class: 'input-lg', id: 'username-input',
+        div_class: 'col-md-6',
+        form_group_html: { id: 'bar', class: 'foo' }
 
     / generate a password field with a descriptive aside
     = f.password_field :password do
@@ -48,9 +49,6 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 
     / select fields now have the second parameter as a label
     = f.date_select :born_on, 'Born on'
-
-    / generate a field with a custom class and id for the form-group wrapper
-    = f.text_field :name, form_group_html: { id: 'bar', class: 'foo' }
 
     / generate agroup of radio buttons
     = f.toggles 'Email Preferences' do

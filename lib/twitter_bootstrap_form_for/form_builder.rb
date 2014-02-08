@@ -305,22 +305,12 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
       add_on = options.delete(:add_on)
 
-      # Add class form-control and any additional classes to the input.
-      options[:class] = "form-control #{options[:class]}".strip
-
-      # Inputs like the date select expect html options like class or id as a
-      # separate parameter. Simply add all options (including the input class form-control)
-      # to the html_options parameter.
-      html_options = options.delete(:html) || {}
-      html_options.merge!(options) if %w(date_select time_select datetime_select
-        select_datetime select_date select_time select_second select_minute
-        select_hour select_day select_month select_year select collection_select
-        grouped_collection_select time_zone_select collection_radio_buttons
-        collection_check_boxes collection_radio_buttons).include?(input.to_s)
-
       form_group_html = options.delete(:form_group_html) || {}
       form_group_html[:class] = "form-group #{form_group_html[:class]}".strip
 
+      # TODO: Would be nicer if we would just call this *div_html* like
+      # we do for *form_group_html* so we can also set other attributes and
+      # not just the class.
       div_classes = []
       if options[:div_class].present?
         div_classes << options.delete(:div_class)
@@ -328,6 +318,18 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         div_classes <<  @options[:default_div_class]
       end
       div_classes << 'input-group' if add_on.present?
+
+      # Add class form-control and any additional classes to the input.
+      options[:class] = "form-control #{options[:class]}".strip
+
+      # Some inputs expect html options like class or id as a separate parameter.
+      # Simply add all remaning options to to that parameter.
+      html_options = options.delete(:html) || {}
+      html_options.merge!(options) if %w(date_select time_select datetime_select
+        select_datetime select_date select_time select_second select_minute
+        select_hour select_day select_month select_year select collection_select
+        grouped_collection_select time_zone_select collection_radio_buttons
+        collection_check_boxes collection_radio_buttons).include?(input.to_s)
 
       div_wrapper(attribute, form_group_html) do
         template.concat self.label(attribute, label, :class => label_class) if label
