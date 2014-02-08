@@ -22,6 +22,11 @@ class FormBuilderTest < ActionView::TestCase
     assert_select 'div.form-group > input'
   end
 
+  test 'it should add custom class to form-group' do
+    with_input_for @user, :email, :text_field, form_group_html: { class: 'foo', id: 'bar' }
+    assert_select 'div.form-group.foo#bar > input'
+  end
+
   test 'it should add class form-control to input' do
     with_input_for @user, :email, :text_field
     assert_select 'input.form-control'

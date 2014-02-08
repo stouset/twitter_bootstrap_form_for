@@ -17,8 +17,8 @@ Gem::Specification.new do |s|
   s.add_dependency "rails", "~> 4.0.0"
 
   s.add_development_dependency "sass-rails", "~> 4.0.0"
-  s.add_development_dependency "haml", "~> 4.0.3"
+  s.add_development_dependency "haml", "~> 4.0.0"
   s.add_development_dependency "haml-rails", "~> 0.4"
-  s.add_development_dependency "anjlab-bootstrap-rails", '~> 3.0.0'
+  s.add_development_dependency "bootstrap-sass", "~> 3.0.3.0"
   s.add_development_dependency "sqlite3"
 end

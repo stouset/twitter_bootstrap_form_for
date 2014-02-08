@@ -318,6 +318,9 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         grouped_collection_select time_zone_select collection_radio_buttons
         collection_check_boxes collection_radio_buttons).include?(input.to_s)
 
+      form_group_html = options.delete(:form_group_html) || {}
+      form_group_html[:class] = "form-group #{form_group_html[:class]}".strip
+
       div_classes = []
       if options[:div_class].present?
         div_classes << options.delete(:div_class)
@@ -326,7 +329,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       end
       div_classes << 'input-group' if add_on.present?
 
-      div_wrapper(attribute, :class => 'form-group') do
+      div_wrapper(attribute, form_group_html) do
         template.concat self.label(attribute, label, :class => label_class) if label
 
         template.concat conditional_div_wrapper(:class => div_classes.join(' ').presence) {

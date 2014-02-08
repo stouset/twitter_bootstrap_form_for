@@ -5,7 +5,7 @@ require 'rails/all'
 Bundler.require(*Rails.groups)
 require "twitter_bootstrap_form_for"
 
-require "bootstrap-rails"
+require "bootstrap-sass"
 require "sass/rails"
 require "haml-rails"
 
