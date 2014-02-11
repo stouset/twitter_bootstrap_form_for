@@ -453,6 +453,31 @@ class FormBuilderTest < ActionView::TestCase
     assert_select 'div.form-group.has-error > span.help-block', 'can&#39;t be blank'
   end
 
+
+  test 'it should display error messages with the errors helper' do
+    @user.valid?
+    with_concat_form_for @user do |f|
+      f.errors
+    end
+    assert_select 'div#error_explanation h2', "2 errors prohibited this User from being saved:"
+  end
+
+  test 'it should only display selected errors with the errors helper' do
+    @user.valid?
+    with_concat_form_for @user do |f|
+      f.errors only: :name
+    end
+    assert_select 'div#error_explanation h2', "1 error prohibited this User from being saved:"
+  end
+
+  test 'it should only display errors except specified fields with the errors helper' do
+    @user.valid?
+    with_concat_form_for @user do |f|
+      f.errors except: :name
+    end
+    assert_select 'div#error_explanation h2', "1 error prohibited this User from being saved:"
+  end
+
   # TODO
   # test errors on checkbox and checkbox group and inline elements (if we add it back)
 

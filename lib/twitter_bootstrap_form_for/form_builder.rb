@@ -23,6 +23,57 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   ]
 
   #
+  # Renders all or selected error messages in central place.
+  # By default all error messages are rendered on the field that has the error
+  # so this helper is only necessary if you have errors on your model that have
+  # no corresponding field in the form such as hidden fields or *:base*.
+  #
+  #   f.errors
+  #
+  #   <div id="error_explanation">
+  #     <h2>2 errors prohibited this User from being saved:</h2>
+  #     <ul>
+  #       <li>Username can't be blank</li>
+  #       <li>Password is required</li>
+  #     </ul>
+  #   </div>
+  #
+  # To prevent errors from beeing listed twice you can use the *only* or *except*
+  # option on the errors helper like this:
+  #
+  #   f.errors only: :base
+  #
+  #   f.errors except: [:username, :email, :password]
+  #
+  # TODO: It would be cool if we could just figure out which error messages where already
+  # rendered and then display the remaning errors automatically without the need to add
+  # the *errors* helper and without the *only* and *except* fiddling.
+  def errors(*args)
+    return unless self.object.errors.any?
+    options = args.extract_options!
+
+    errors = {}
+    self.object.errors.each do |field|
+      errors[field] = self.object.errors.full_message field, self.object.errors[field]
+    end
+
+    if options[:except]
+      errors.except!(*(options[:except].is_a?(Array) ? options[:except] : [options[:except]]))
+    elsif options[:only]
+      errors.slice!(*(options[:only].is_a?(Array) ? options[:only] : [options[:only]]))
+    end
+
+    template.content_tag(:div, id: 'error_explanation') do
+      template.concat template.content_tag(:h2, "#{template.pluralize(errors.count, "error")} prohibited this #{self.object.class.model_name.human} from being saved:")
+      template.concat template.content_tag(:ul) {
+       errors.each do |msg|
+           template.concat template.content_tag(:li, msg)
+        end
+      }
+    end
+  end
+
+  #
   # Wraps the contents of the passed block with a fieldset and a (optional) legend.
   #
   #   f.inputs 'Sign-up' do
@@ -286,8 +337,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # if will create a placeholder with the text from the label (or use the attribute name
   # if no label is specified)
   #
-
-
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
       options = args.extract_options!
@@ -398,6 +447,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
     end
   end
+
 
   protected
 

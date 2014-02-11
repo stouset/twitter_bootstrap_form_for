@@ -20,6 +20,13 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 
 ```haml
 = twitter_bootstrap_form_for @user, layout: [:vertical (default) OR :horizontal OR :inline], default_div_class: 'col-lg-10 (default)', role: 'form (default)' do |f|
+  // By default error messages on fields are rendered inline with the field and you
+  // don't have to do something special to display them. But if you have error messages
+  // on your model that have no corresponding field in the form such as hidden fields
+  // or if you use *model.errors.add :base* for example you can use the following helper.
+  // To prevent errors from beeing listed twice you can use the *only* or *except*
+  // option like this *= f.errors only: :base* for example.
+  = f.errors
 
   / wraps a section in a fieldset with the provided legend text
   = f.inputs 'Sign up', class: 'sign_up' do

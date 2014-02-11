@@ -25,7 +25,7 @@ module TwitterBootstrapFormFor::FormHelpers
         options[:html] ||= {}
         options[:html].merge!(html_options){|key, first, second| "#{first} #{second}" }
 
-        options[:builder]  = TwitterBootstrapFormFor::FormBuilder
+        options[:builder] = TwitterBootstrapFormFor::FormBuilder
 
         # call the original method with our overridden options
         _override_field_error_proc do
