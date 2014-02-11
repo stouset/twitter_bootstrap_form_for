@@ -459,7 +459,7 @@ class FormBuilderTest < ActionView::TestCase
     with_concat_form_for @user do |f|
       f.errors
     end
-    assert_select 'div#error_explanation h2', "2 errors prohibited this User from being saved:"
+    assert_select 'div#error_explanation h2', "There were problems with the following fields:"
   end
 
   test 'it should only display selected errors with the errors helper' do
@@ -467,7 +467,7 @@ class FormBuilderTest < ActionView::TestCase
     with_concat_form_for @user do |f|
       f.errors only: :name
     end
-    assert_select 'div#error_explanation h2', "1 error prohibited this User from being saved:"
+    assert_select 'div#error_explanation ul li', 1
   end
 
   test 'it should only display errors except specified fields with the errors helper' do
@@ -475,7 +475,7 @@ class FormBuilderTest < ActionView::TestCase
     with_concat_form_for @user do |f|
       f.errors except: :name
     end
-    assert_select 'div#error_explanation h2', "1 error prohibited this User from being saved:"
+    assert_select 'div#error_explanation ul li', 1
   end
 
   # TODO

@@ -31,7 +31,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #   f.errors
   #
   #   <div id="error_explanation">
-  #     <h2>2 errors prohibited this User from being saved:</h2>
+  #     <h2>There were problems with the following fields:</h2>
   #     <ul>
   #       <li>Username can't be blank</li>
   #       <li>Password is required</li>
@@ -45,6 +45,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #
   #   f.errors except: [:username, :email, :password]
   #
+  # Additional options passed to the method are added as html options to the wrapper div.
+  #
   # TODO: It would be cool if we could just figure out which error messages where already
   # rendered and then display the remaning errors automatically without the need to add
   # the *errors* helper and without the *only* and *except* fiddling.
@@ -54,20 +56,31 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
     errors = {}
     self.object.errors.each do |field|
-      errors[field] = self.object.errors.full_message field, self.object.errors[field]
+      errors[field] = self.object.errors.full_messages_for(field)
     end
 
-    if options[:except]
-      errors.except!(*(options[:except].is_a?(Array) ? options[:except] : [options[:except]]))
-    elsif options[:only]
-      errors.slice!(*(options[:only].is_a?(Array) ? options[:only] : [options[:only]]))
+    if except = options.delete(:except)
+      errors.except!(*(except.is_a?(Array) ? except : [except]))
+    elsif only = options.delete(:only)
+      errors.slice!(*(only.is_a?(Array) ? only : [only]))
     end
 
-    template.content_tag(:div, id: 'error_explanation') do
-      template.concat template.content_tag(:h2, "#{template.pluralize(errors.count, "error")} prohibited this #{self.object.class.model_name.human} from being saved:")
+    # The I18n key *errors.messages.not_saved* is acually what Rails suggests as
+    # the error messages headline but i think this is confusing because if we
+    # just display error messages for *:base* it would say "1 error prohibited this model from being saved:"
+    # but there might be more error messages on the fields further down the form...
+    # headline = options[:headline] || I18n.t('errors.messages.not_saved', count: errors.count, resource: self.object.class.model_name.human.downcase, default: "#{template.pluralize(errors.count, "error")} prohibited this #{self.object.class.model_name.human} from being saved:")
+    headline = options.delete(:headline) || I18n.t('errors.template.body', default: 'There were problems with the following fields:')
+
+    options[:id] ||= 'error_explanation'
+
+    template.content_tag(:div, options) do
+      template.concat template.content_tag(:h2, headline)
       template.concat template.content_tag(:ul) {
-       errors.each do |msg|
-           template.concat template.content_tag(:li, msg)
+       errors.each do |field, messages|
+          messages.each do |message|
+            template.concat template.content_tag(:li, message)
+          end
         end
       }
     end
