@@ -65,6 +65,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       errors.slice!(*(only.is_a?(Array) ? only : [only]))
     end
 
+    return unless errors.any?
+
     # The I18n key *errors.messages.not_saved* is acually what Rails suggests as
     # the error messages headline but i think this is confusing because if we
     # just display error messages for *:base* it would say "1 error prohibited this model from being saved:"
@@ -424,6 +426,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       label = args.first.blank? ? attribute.to_s.humanize : args.shift
       input_class = bootstrap_class_for_input(toggle)
 
+      puts "!!! #{label}, #{label.class.name}"
+
       # If the checkbox/radiobutton style is :inline we need to add
       # a style class to the label. If the style is :stacked (default) the
       # checkbox must be wrapped with a div.checkbox.
@@ -447,7 +451,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           conditional_div_wrapper(div_wrapper_attributes) do
             template.concat template.content_tag(:label, :class => label_class) {
               template.concat super(attribute, *args)
-              template.concat " #{label}"
+              template.concat label
             }
             if toggle == :check_box
               template.concat template.content_tag(:div, :class => "has-error") {
