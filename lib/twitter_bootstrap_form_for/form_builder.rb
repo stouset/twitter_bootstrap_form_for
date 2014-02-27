@@ -426,8 +426,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       label = args.first.blank? ? attribute.to_s.humanize : args.shift
       input_class = bootstrap_class_for_input(toggle)
 
-      puts "!!! #{label}, #{label.class.name}"
-
       # If the checkbox/radiobutton style is :inline we need to add
       # a style class to the label. If the style is :stacked (default) the
       # checkbox must be wrapped with a div.checkbox.
