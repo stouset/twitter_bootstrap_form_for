@@ -423,7 +423,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args|
-      label = args.first.blank? ? attribute.to_s.humanize : args.shift
+      options = args.extract_options!
+      label = args.shift || attribute.to_s.humanize
       input_class = bootstrap_class_for_input(toggle)
 
       # If the checkbox/radiobutton style is :inline we need to add
@@ -448,7 +449,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         conditional_div_wrapper(column_attributes) do
           conditional_div_wrapper(div_wrapper_attributes) do
             template.concat template.content_tag(:label, :class => label_class) {
-              template.concat super(attribute, *args)
+              template.concat super(attribute, *(args << options))
               template.concat label
             }
             if toggle == :check_box
