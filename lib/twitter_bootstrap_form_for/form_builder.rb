@@ -347,24 +347,25 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #     <input class="form-control" id="user_email" name="user[email]" type="text" />
   #   </div>
   #
-  # It will automatically create a placeholder if you create no label (label==false). Except if
-  # you specify +placeholder: false+ as a option. If you specify +placeholder: true+
-  # if will create a placeholder with the text from the label (or use the attribute name
-  # if no label is specified)
+  # It will automatically create a placeholder if you create no label (label==false).
+  # Except if you specify "placeholder: false" as a option. If you specify
+  # "placeholder: true" if will create a placeholder with the text from the label
+  # or use the (translated) attribute name if no label is specified.
   #
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
       options = args.extract_options!
 
       label = args.shift
+      label = human_attribute_name(attribute) unless label.is_a?(FalseClass) || label.present?
       label_class = options.delete(:label_class) || @options[:default_label_class]
 
       if options[:placeholder].is_a?(FalseClass)
         options.delete(:placeholder)
       elsif options[:placeholder].is_a?(TrueClass)
-        options[:placeholder] = label || attribute.to_s.humanize
+        options[:placeholder] = label || human_attribute_name(attribute)
       elsif options[:placeholder].blank? && label.is_a?(FalseClass)
-        options[:placeholder] = attribute.to_s.humanize
+        options[:placeholder] = human_attribute_name(attribute)
       end
 
       add_on = options.delete(:add_on)
@@ -396,7 +397,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         collection_check_boxes collection_radio_buttons).include?(input.to_s)
 
       div_wrapper(attribute, form_group_html) do
-        template.concat self.label(attribute, label, :class => label_class) unless label.is_a?(FalseClass)
+        template.concat self.label(attribute, label.html_safe, :class => label_class) unless label.is_a?(FalseClass)
 
         template.concat conditional_div_wrapper(:class => div_classes.join(' ').presence) {
           block.call if block.present? && add_on == :prepend
@@ -424,7 +425,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args|
       options = args.extract_options!
-      label = args.shift
+
+      label = args.shift || human_attribute_name(attribute)
       input_class = bootstrap_class_for_input(toggle)
 
       # If the checkbox/radiobutton style is :inline we need to add
@@ -451,11 +453,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
 
             template.concat self.label(attribute, :class => label_class) {
               template.concat super(attribute, *(args << options))
-              # We now just have the checkbox inside the label but we still need
-              # the label text. Call *label* again and remove the html tags to
-              # just get the label content. We do this to get I18n translations
-              # that might exist for the field.
-              template.concat template.sanitize(self.label(attribute, label)) unless label.is_a?(FalseClass)
+              template.concat label
             }
 
             if toggle == :check_box
@@ -518,70 +516,80 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     self.object.errors[attribute].try(:join, ', ')
   end
 
+
   private
 
-  #
-  # Returns an HTML id to uniquely identify the markup around an input field.
-  # If a +default+ is provided, it uses that one instead.
-  #
-  def _wrapper_id(attribute, default = nil)
-    default || [
-      _object_name + _object_index,
-      _attribute_name(attribute),
-      'input'
-     ].join('_')
-  end
-
-  #
-  # Returns any classes necessary for the wrapper div around fields for
-  # +attribute+, such as 'errors' if any errors are present on the attribute.
-  # This merges any +classes+ passed in.
-  #
-  def _wrapper_classes(attribute, *classes)
-    classes.compact.tap do |klasses|
-      klasses.push 'has-error' if self.errors_on?(attribute)
-    end.join(' ')
-  end
-
-  def _attribute_name(attribute)
-    attribute.to_s.gsub(/[\?\/\-]$/, '')
-  end
-
-  def _object_name
-    self.object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/, "_").sub(/_$/, "")
-  end
-
-  def _object_index
-    case
-      when options.has_key?(:index) then options[:index]
-      when defined?(@auto_index)    then @auto_index
-      else                               nil
-    end.to_s
-  end
-
-  #
-  # Return only those options from a options hash that have values.
-  #   present_options {:id => 1, :class => '', :role => nil}
-  #   => {:id => 1}
-  #
-  def present_options(options)
-    options ||= {}
-    options.select {|option,value| value.present? }
-  end
-
-  #
-  # Bootstrap input classes are different from input names. This method returns
-  # the right class for the right input
-  #  bootstrap_class_for_input :radio_button
-  #  => 'radio'
-  #
-  def bootstrap_class_for_input(input)
-    if input.to_s == 'check_box'
-      'checkbox'
-    elsif input.to_s == 'radio_button'
-      'radio'
-    else
-      input.to_s
+    #
+    # Returns an HTML id to uniquely identify the markup around an input field.
+    # If a +default+ is provided, it uses that one instead.
+    #
+    def _wrapper_id(attribute, default = nil)
+      default || [
+        _object_name + _object_index,
+        _attribute_name(attribute),
+        'input'
+       ].join('_')
     end
-  end
+
+    #
+    # Returns any classes necessary for the wrapper div around fields for
+    # +attribute+, such as 'errors' if any errors are present on the attribute.
+    # This merges any +classes+ passed in.
+    #
+    def _wrapper_classes(attribute, *classes)
+      classes.compact.tap do |klasses|
+        klasses.push 'has-error' if self.errors_on?(attribute)
+      end.join(' ')
+    end
+
+    def _attribute_name(attribute)
+      attribute.to_s.gsub(/[\?\/\-]$/, '')
+    end
+
+    def _object_name
+      self.object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/, "_").sub(/_$/, "")
+    end
+
+    def _object_index
+      case
+        when options.has_key?(:index) then options[:index]
+        when defined?(@auto_index)    then @auto_index
+        else                               nil
+      end.to_s
+    end
+
+    def human_attribute_name(attribute)
+      if self.object.class.respond_to?(:human_attribute_name)
+        # Marking this as *html_safe* so we can use html in I18n translation files.
+        self.object.class.human_attribute_name(attribute).html_safe
+      else
+        attribute.to_s.humanize
+      end
+    end
+
+    #
+    # Return only those options from a options hash that have values.
+    #   present_options {:id => 1, :class => '', :role => nil}
+    #   => {:id => 1}
+    #
+    def present_options(options)
+      options ||= {}
+      options.select {|option,value| value.present? }
+    end
+
+    #
+    # Bootstrap input classes are different from input names. This method returns
+    # the right class for the right input
+    #  bootstrap_class_for_input :radio_button
+    #  => 'radio'
+    #
+    def bootstrap_class_for_input(input)
+      if input.to_s == 'check_box'
+        'checkbox'
+      elsif input.to_s == 'radio_button'
+        'radio'
+      else
+        input.to_s
+      end
+    end
 end
