@@ -347,7 +347,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   #     <input class="form-control" id="user_email" name="user[email]" type="text" />
   #   </div>
   #
-  # It will automatically create a placeholder if you create no label. Except if
+  # It will automatically create a placeholder if you create no label (label==false). Except if
   # you specify +placeholder: false+ as a option. If you specify +placeholder: true+
   # if will create a placeholder with the text from the label (or use the attribute name
   # if no label is specified)
@@ -356,14 +356,14 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     define_method input do |attribute, *args, &block|
       options = args.extract_options!
 
-      label = args.first.nil? ? '' : args.shift
+      label = args.shift
       label_class = options.delete(:label_class) || @options[:default_label_class]
 
       if options[:placeholder].is_a?(FalseClass)
         options.delete(:placeholder)
       elsif options[:placeholder].is_a?(TrueClass)
-        options[:placeholder] = label.presence || attribute.to_s.humanize
-      elsif options[:placeholder].nil? && !label
+        options[:placeholder] = label || attribute.to_s.humanize
+      elsif options[:placeholder].blank? && label.is_a?(FalseClass)
         options[:placeholder] = attribute.to_s.humanize
       end
 
@@ -396,7 +396,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         collection_check_boxes collection_radio_buttons).include?(input.to_s)
 
       div_wrapper(attribute, form_group_html) do
-        template.concat self.label(attribute, label, :class => label_class) if label
+        template.concat self.label(attribute, label, :class => label_class) unless label.is_a?(FalseClass)
 
         template.concat conditional_div_wrapper(:class => div_classes.join(' ').presence) {
           block.call if block.present? && add_on == :prepend
@@ -424,7 +424,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args|
       options = args.extract_options!
-      label = args.shift || attribute.to_s.humanize
+      label = args.shift
       input_class = bootstrap_class_for_input(toggle)
 
       # If the checkbox/radiobutton style is :inline we need to add
@@ -448,10 +448,16 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       conditional_div_wrapper(form_group_attributes) do
         conditional_div_wrapper(column_attributes) do
           conditional_div_wrapper(div_wrapper_attributes) do
-            template.concat template.content_tag(:label, :class => label_class) {
+
+            template.concat self.label(attribute, :class => label_class) {
               template.concat super(attribute, *(args << options))
-              template.concat label
+              # We now just have the checkbox inside the label but we still need
+              # the label text. Call *label* again and remove the html tags to
+              # just get the label content. We do this to get I18n translations
+              # that might exist for the field.
+              template.concat template.sanitize(self.label(attribute, label)) unless label.is_a?(FalseClass)
             }
+
             if toggle == :check_box
               template.concat template.content_tag(:div, :class => "has-error") {
                 template.concat error_span(attribute)
