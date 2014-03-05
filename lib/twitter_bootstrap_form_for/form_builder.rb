@@ -299,7 +299,139 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Examples: Check the readme for a complete example on how to create a
   # form with twitter_bootstrap_form_for.
   #
-  #   = user.email_field :email
+  #   = f.email_field :email
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <label for="user_email">Email</label>
+  #     <input class="form-control" id="user_email" name="user[email]" type="text" />
+  #   </div>
+  #
+  #   = f.email_field :email, 'Your email address', :placeholder => 'me@example.com', :class => 'input-lg', :div_class => 'col-md-6'
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <label for="user_email">Your email address</label>
+  #     <div class="col-md-6">
+  #       <input class="form-control input-lg" id="user_email" name="user[email]" placeholder="me@example.com" type="text" />
+  #     </div>
+  #   </div>
+  #
+  # To create a help text:
+  #
+  #   = f.email_field :email do
+  #     %span.help-block We won't send no spam
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <label for="user_email">Email</label>
+  #     <input class="form-control" id="user_email" name="user[email]" type="text" />
+  #     <span class="help-block">We won't send no spam</span>
+  #   </div>
+  #
+  # To create a add on:
+  #
+  #   = f.email_field :email, :add_on => :prepend do
+  #     %span.input-group-addon @
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <label for="user_email">Email</label>
+  #     <div class="input-group">
+  #       <span class="input-group-addon">@</span>
+  #       <input class="form-control" id="user_email" name="user[email]" type="text" />
+  #     </div>
+  #   </div>
+  #
+  # To remove the label
+  #
+  #   = f.email_field :email, false
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <input class="form-control" id="user_email" name="user[email]" type="text" />
+  #   </div>
+  #
+  # It will automatically create a placeholder if you create no label (label==false).
+  # Except if you specify "placeholder: false" as a option. If you specify
+  # "placeholder: true" if will create a placeholder with the text from the label
+  # or use the (translated) attribute name if no label is specified.
+  #
+  INPUTS.each do |input|
+    define_method input do |attribute, *args, &block|
+      options = args.extract_options!
+
+      label = args.shift
+      label = human_attribute_name(attribute) unless label.is_a?(FalseClass) || label.present?
+      label_class = options.delete(:label_class) || @options[:default_label_class]
+
+      if options[:placeholder].is_a?(FalseClass)
+        options.delete(:placeholder)
+      elsif options[:placeholder].is_a?(TrueClass)
+        options[:placeholder] = label || human_attribute_name(attribute)
+      elsif options[:placeholder].blank? && label.is_a?(FalseClass)
+        options[:placeholder] = human_attribute_name(attribute)
+      end
+
+      add_on = options.delete(:add_on)
+
+      form_group_html = options.delete(:form_group_html) || {}
+      form_group_html[:class] = "form-group #{form_group_html[:class]}".strip
+
+      # We need to create a extra wrapper div for input addons or the alignment
+      # will be off when used in horizontal forms.
+      input_group_html = options.delete(:input_group_html) || {}
+      input_group_html[:class] = "input-group #{input_group_html[:class]}".strip if add_on.present?
+
+      # TODO: Would be nicer if we would just call this *div_html* like
+      # we do for *form_group_html* so we can also set other attributes and
+      # not just the class.
+      div_classes = []
+      if options[:div_class].present?
+        div_classes << options.delete(:div_class)
+      elsif @options[:default_div_class].present?
+        div_classes <<  @options[:default_div_class]
+      end
+
+      # Add class form-control and any additional classes to the input.
+      options[:class] = "form-control #{options[:class]}".strip
+
+      # Some inputs expect html options like class or id as a separate parameter.
+      # Simply add all remaning options to to that parameter.
+      html_options = options.delete(:html) || {}
+      html_options.merge!(options) if %w(date_select time_select datetime_select
+        select_datetime select_date select_time select_second select_minute
+        select_hour select_day select_month select_year select collection_select
+        grouped_collection_select time_zone_select collection_radio_buttons
+        collection_check_boxes collection_radio_buttons).include?(input.to_s)
+
+      div_wrapper(attribute, form_group_html) do
+        template.concat self.label(attribute, label.html_safe, :class => label_class) unless label.is_a?(FalseClass)
+
+        template.concat conditional_div_wrapper(:class => div_classes.join(' ').presence) {
+          template.concat conditional_div_wrapper(input_group_html) {
+            block.call if block.present? && add_on == :prepend
+
+            final_args = args << options
+            final_args << html_options if html_options.any?
+            template.concat super(attribute, *final_args)
+
+            template.concat error_span(attribute)
+            # Append the add-on if :append was specified or if a add-on is
+            # present but neither :append nor :prepend were specified.
+            # This can be used to add the given block on as a help-block.
+            block.call if block.present? && (add_on == :append || add_on != :prepend)
+          }
+        }
+      end
+    end
+  end
+
+
+
+  #
+  # Create check_box or radio_button inputs. We support the same parameters as
+  # the Rails form helpers with some additions to create the bootstrap markup.
+  #
+  # Examples: Check the readme for a complete example on how to create a
+  # form with twitter_bootstrap_form_for.
+  #
+  #   = f.check_box :agree,   'I agree to the abusive Terms and Conditions'
   #
   #   <div class="form-group" id="user_email_input">
   #     <label for="user_email">Email</label>
@@ -351,76 +483,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Except if you specify "placeholder: false" as a option. If you specify
   # "placeholder: true" if will create a placeholder with the text from the label
   # or use the (translated) attribute name if no label is specified.
-  #
-  INPUTS.each do |input|
-    define_method input do |attribute, *args, &block|
-      options = args.extract_options!
-
-      label = args.shift
-      label = human_attribute_name(attribute) unless label.is_a?(FalseClass) || label.present?
-      label_class = options.delete(:label_class) || @options[:default_label_class]
-
-      if options[:placeholder].is_a?(FalseClass)
-        options.delete(:placeholder)
-      elsif options[:placeholder].is_a?(TrueClass)
-        options[:placeholder] = label || human_attribute_name(attribute)
-      elsif options[:placeholder].blank? && label.is_a?(FalseClass)
-        options[:placeholder] = human_attribute_name(attribute)
-      end
-
-      add_on = options.delete(:add_on)
-
-      form_group_html = options.delete(:form_group_html) || {}
-      form_group_html[:class] = "form-group #{form_group_html[:class]}".strip
-
-      # TODO: Would be nicer if we would just call this *div_html* like
-      # we do for *form_group_html* so we can also set other attributes and
-      # not just the class.
-      div_classes = []
-      if options[:div_class].present?
-        div_classes << options.delete(:div_class)
-      elsif @options[:default_div_class].present?
-        div_classes <<  @options[:default_div_class]
-      end
-      div_classes << 'input-group' if add_on.present?
-
-      # Add class form-control and any additional classes to the input.
-      options[:class] = "form-control #{options[:class]}".strip
-
-      # Some inputs expect html options like class or id as a separate parameter.
-      # Simply add all remaning options to to that parameter.
-      html_options = options.delete(:html) || {}
-      html_options.merge!(options) if %w(date_select time_select datetime_select
-        select_datetime select_date select_time select_second select_minute
-        select_hour select_day select_month select_year select collection_select
-        grouped_collection_select time_zone_select collection_radio_buttons
-        collection_check_boxes collection_radio_buttons).include?(input.to_s)
-
-      div_wrapper(attribute, form_group_html) do
-        template.concat self.label(attribute, label.html_safe, :class => label_class) unless label.is_a?(FalseClass)
-
-        template.concat conditional_div_wrapper(:class => div_classes.join(' ').presence) {
-          block.call if block.present? && add_on == :prepend
-
-          final_args = args << options
-          final_args << html_options if html_options.any?
-          template.concat super(attribute, *final_args)
-
-          template.concat error_span(attribute)
-          # Append the add-on if :append was specified or if a add-on is
-          # present but neither :append nor :prepend were specified.
-          # This can be used to add the given block on as a help-block.
-          block.call if block.present? && (add_on == :append || add_on != :prepend)
-        }
-      end
-    end
-  end
-
-
-  #
-  # Create check_box or radio_button inputs.
-  # Please read the documentation on the +toggles+ method on how to create
-  # checkboxes or radiobuttons.
   #
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args|

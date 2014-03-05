@@ -434,6 +434,14 @@ class FormBuilderTest < ActionView::TestCase
   # end
 
 
+  test 'it should append a add on and create a extra input-group div in horizontal forms' do
+    with_horizontal_form_input_for @user, :email, :text_field, add_on: :append do
+      concat %(<span class="input-group-addon">foo</span>).html_safe
+    end
+    assert_select 'div.form-group > div.col-lg-10 > div.input-group > span.input-group-addon:last-child', 'foo'
+  end
+
+
   # Errors
 
   # <div class="form-group has-error">
