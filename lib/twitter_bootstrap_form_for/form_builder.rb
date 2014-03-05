@@ -431,58 +431,51 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # Examples: Check the readme for a complete example on how to create a
   # form with twitter_bootstrap_form_for.
   #
-  #   = f.check_box :agree,   'I agree to the abusive Terms and Conditions'
+  # To generate a single checkbox use
   #
-  #   <div class="form-group" id="user_email_input">
-  #     <label for="user_email">Email</label>
-  #     <input class="form-control" id="user_email" name="user[email]" type="text" />
+  #   = f.check_box :agree
+  #
+  #   <div class="checkbox" id="user_agree_input">
+  #     <label for="user_agree">
+  #       <input name="user[agree]" type="hidden" value="0">
+  #       <input id="user_agree" name="user[agree]" type="checkbox" value="1">
+  #       Agree
+  #     </label>
   #   </div>
   #
-  #   = user.email_field :email, 'Your email address', :placeholder => 'me@example.com', :class => 'input-lg', :div_class => 'col-md-6'
+  # To generate a group of checkboxes use the *toggles* method
+  # We also show how to set custom labels for checkboxes. Labels work the same
+  # as for the regular input fields.
   #
-  #   <div class="form-group" id="user_email_input">
-  #     <label for="user_email">Your email address</label>
-  #     <div class="col-md-6">
-  #       <input class="form-control input-lg" id="user_email" name="user[email]" placeholder="me@example.com" type="text" />
+  #   = f.toggles 'Agreements' do
+  #     = f.check_box :agree,   'I agree to the abusive Terms and Conditions'
+  #     = f.check_box :spam,    'I agree to receive all sorts of spam'
+  #     = f.check_box :spammer, 'I agree to let the site spam others through my Twitter account'
+  #
+  #   <div class="form-group">
+  #     <label>Agreements</label>
+  #     <div class="checkbox" id="user_agree_input">
+  #       <label for="user_agree">
+  #         <input name="user[agree]" type="hidden" value="0">
+  #         <input id="user_agree" name="user[agree]" type="checkbox" value="1">
+  #         I agree to the abusive Terms and Conditions
+  #       </label>
+  #     </div>
+  #     <div class="checkbox" id="user_spam_input">
+  #       <label for="user_spam">
+  #         <input name="user[spam]" type="hidden" value="0">
+  #         <input id="user_spam" name="user[spam]" type="checkbox" value="1">
+  #         I agree to receive all sorts of spam
+  #       </label>
+  #     </div>
+  #     <div class="checkbox" id="user_spammer_input">
+  #       <label for="user_spammer">
+  #         <input name="user[spammer]" type="hidden" value="0">
+  #         <input id="user_spammer" name="user[spammer]" type="checkbox" value="1">
+  #         I agree to let the site spam others through my Twitter account
+  #       </label>
   #     </div>
   #   </div>
-  #
-  # To create a help text:
-  #
-  #   = user.email_field :email do
-  #     %span.help-block We won't send no spam
-  #
-  #   <div class="form-group" id="user_email_input">
-  #     <label for="user_email">Email</label>
-  #     <input class="form-control" id="user_email" name="user[email]" type="text" />
-  #     <span class="help-block">We won't send no spam</span>
-  #   </div>
-  #
-  # To create a add on:
-  #
-  #   = user.email_field :email, :add_on => :prepend do
-  #     %span.input-group-addon @
-  #
-  #   <div class="form-group" id="user_email_input">
-  #     <label for="user_email">Email</label>
-  #     <div class="input-group">
-  #       <span class="input-group-addon">@</span>
-  #       <input class="form-control" id="user_email" name="user[email]" type="text" />
-  #     </div>
-  #   </div>
-  #
-  # To remove the label
-  #
-  #   = user.email_field :email, false
-  #
-  #   <div class="form-group" id="user_email_input">
-  #     <input class="form-control" id="user_email" name="user[email]" type="text" />
-  #   </div>
-  #
-  # It will automatically create a placeholder if you create no label (label==false).
-  # Except if you specify "placeholder: false" as a option. If you specify
-  # "placeholder: true" if will create a placeholder with the text from the label
-  # or use the (translated) attribute name if no label is specified.
   #
   TOGGLES.each do |toggle|
     define_method toggle do |attribute, *args|

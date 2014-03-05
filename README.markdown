@@ -54,22 +54,19 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
     = f.text_field :twitter_id, 'Twitter', add_on: :prepend do
       %span.input-group-addon @
 
-    / select fields now have the second parameter as a label
-    = f.date_select :born_on, 'Born on'
+    / generate a single checkbox
+    = f.check_box :agree
 
-    / generate agroup of radio buttons
-    = f.toggles 'Email Preferences' do
-      = f.radio_button :email, 'HTML Email', :html, checked: true
-      = f.radio_button :email, 'Plain Text', :plain
-
-    / generate a group of checkboxes
+    / generate a group of checkboxes using the *toggles* method and add custom labels
     = f.toggles 'Agreements' do
       = f.check_box :agree,   'I agree to the abusive Terms and Conditions'
       = f.check_box :spam,    'I agree to receive all sorts of spam'
       = f.check_box :spammer, 'I agree to let the site spam others through my Twitter account'
 
-    / single checkboxes must not be wrapped with the *toggles* method.
-    = f.check_box :agree,   'I agree to the abusive Terms and Conditions'
+    / generate a group of radio buttons using the *toggles* method and add custom labels
+    = f.toggles 'Email Preferences' do
+      = f.radio_button :email, 'HTML Email', :html, checked: true
+      = f.radio_button :email, 'Plain Text', :plain
 
   / wraps buttons in a distinctive style
   = f.actions do
