@@ -352,6 +352,15 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # "placeholder: true" if will create a placeholder with the text from the label
   # or use the (translated) attribute name if no label is specified.
   #
+  # If a label is present and the field is required we append a visual highlight
+  # to the label that will look like this by default:
+  #
+  #   Label Text <span class="required" title="required">*</span>
+  #
+  # To translate the title tag add a key "helpers.required_field_label" to
+  # your locale file. To use custom html for the label use the key
+  # "helpers.required_field_label_html" instead.
+  #
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
       options = args.extract_options!
@@ -368,20 +377,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         options[:placeholder] = human_attribute_name(attribute)
       end
 
-      # Check and mark required fields. If the options have a key "required" we use this
-      # otherwise we check if the model field is required.
+      # Check and mark required fields. If the options have a key "required" we
+      # use this otherwise we check if the model field is required.
       required = options.has_key?(:required) ? options[:required] : self.object.try("#{attribute}_required?") || false
       options[:required] = required
 
-      # If a label is present append a visual highlight if the field is required.
-      # By default this will look like this:
-      #
-      #   Label Text <span class="required" title="required">*</span>
-      #
-      # To translate the title tag add a key "helpers.required_field_label" to
-      # your locale file. To use custom html for the label use the key
-      # "helpers.required_field_label_html" instead.
-      #
       if required && label
         if I18n.t('helpers.required_field_label_html', default: '').presence
           label += " #{I18n.t('helpers.required_field_label_html', default: '')}".html_safe
@@ -510,9 +510,11 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       if @toggles_style == :inline
         label_class = "#{input_class}-inline"
       else
-        # We must wrap the checkox in a div.checkbox if the checkbox style is not inline
-        div_wrapper_attributes = { :id => _wrapper_id(attribute), :class => input_class }
+        # Checkboxes and radiobuttons are wrapped with a "div.checkbox" by default
+        # except if we they are rendered inline via the *toggles* method.
+        div_wrapper_attributes = { :id => _wrapper_id(attribute), :class => _wrapper_classes(attribute, input_class) }
       end
+
 
       # In horizontal forms single checkboxes must be wrapped with a form group
       # and column classes. If the checkbox is created inside a toggles block we
@@ -525,17 +527,23 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       conditional_div_wrapper(form_group_attributes) do
         conditional_div_wrapper(column_attributes) do
           conditional_div_wrapper(div_wrapper_attributes) do
-
             template.concat self.label(attribute, :class => label_class) {
               template.concat super(attribute, *(args << options))
               template.concat label
             }
 
-            if toggle == :check_box
-              template.concat template.content_tag(:div, :class => "has-error") {
-                template.concat error_span(attribute)
-              } if errors_on?(attribute)
-            end
+            # I think the error span must be rendered for checkboxes and radiobuttons
+            # and not just for checkboxes. Also it doesn't seem that the extra div
+            # around the error span is needed because the "has-error" class is
+            # now attached to the div.checkbox wrapper.
+            # I leave this here for now because maybe I have overlooked something...
+            # if toggle == :check_box
+            #   template.concat template.content_tag(:div, :class => "has-error") {
+            #     template.concat error_span(attribute)
+            #   } if errors_on?(attribute)
+            # end
+
+            template.concat error_span(attribute)
           end
         end
       end
@@ -552,8 +560,8 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   # an +options+ hash.
   #
   def div_wrapper(attribute, options = {}, &block)
-    options[:id]    = _wrapper_id      attribute, options[:id]
-    options[:class] = _wrapper_classes attribute, options[:class]
+    options[:id] = _wrapper_id(attribute, options[:id])
+    options[:class] = _wrapper_classes(attribute, options[:class])
 
     template.content_tag :div, options, &block
   end
@@ -575,7 +583,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   end
 
   def error_span(attribute, options = {})
-    options[:class] ||= 'help-block'
+    options[:class] ||= 'help-block validator-error'
 
     template.content_tag(
       :span, self.errors_for(attribute),
