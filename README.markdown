@@ -34,6 +34,11 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
     / generate a email field
     = f.email_field :email
 
+    / required fields are marked with an * prepended to their labels.
+    / A field is required if the model responds with "true" to "[attribute]_required?"
+    / or if you specify "required: true|false" on the form field.
+    = f.email_field :email, required: true
+
     / generate a text field with a custom label, a placeholder text, custom attributes
     / (class and id) for the input element, a custom class for the wrapper around the input element
     / and custom attributes for the form-group wrapper.

@@ -368,10 +368,32 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         options[:placeholder] = human_attribute_name(attribute)
       end
 
-      add_on = options.delete(:add_on)
+      # Check and mark required fields. If the options have a key "required" we use this
+      # otherwise we check if the model field is required.
+      required = options.has_key?(:required) ? options[:required] : self.object.try("#{attribute}_required?") || false
+      options[:required] = required
+
+      # If a label is present append a visual highlight if the field is required.
+      # By default this will look like this:
+      #
+      #   Label Text <span class="required" title="required">*</span>
+      #
+      # To translate the title tag add a key "helpers.required_field_label" to
+      # your locale file. To use custom html for the label use the key
+      # "helpers.required_field_label_html" instead.
+      #
+      if required && label
+        if I18n.t('helpers.required_field_label_html', default: '').presence
+          label += " #{I18n.t('helpers.required_field_label_html', default: '')}".html_safe
+        else
+          label += " <span class=\"required\" title=\"#{I18n.t('helpers.required_field_label', default: 'required')}\">*</span>".html_safe
+        end
+      end
 
       form_group_html = options.delete(:form_group_html) || {}
       form_group_html[:class] = "form-group #{form_group_html[:class]}".strip
+
+      add_on = options.delete(:add_on)
 
       # We need to create a extra wrapper div for input addons or the alignment
       # will be off when used in horizontal forms.
@@ -421,8 +443,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       end
     end
   end
-
-
 
   #
   # Create check_box or radio_button inputs. We support the same parameters as

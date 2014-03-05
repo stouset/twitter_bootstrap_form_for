@@ -47,6 +47,11 @@ class FormBuilderTest < ActionView::TestCase
     assert_select 'div.form-group > select.form-control'
   end
 
+  test 'it should hightlight required fields' do
+    with_input_for @user, :email, :text_field, required: true
+    assert_select 'label > span.required'
+  end
+
 
   # Labels and placeholders
 
