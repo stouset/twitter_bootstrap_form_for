@@ -292,6 +292,20 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end
   end
 
+  # We overwrite the default form builder methods with our own methods later and
+  # we can access the original methods inside the overwritten method via *super*.
+  # But sometimes it might be necessary to access the original methods outside
+  # the overwritten method. For this we create methods here that make this possible
+  # via "original_[input]". For example to access the original *text_field* method use:
+  #
+  #   f.original_text_field
+  #
+  INPUTS.each do |input|
+    define_method "original_#{input.to_s}" do |attribute, *args, &block|
+      self.class.superclass.instance_method(input).bind(self).call(attribute, *args, &block)
+    end
+  end
+
   #
   # Creates the different inputs. We support the same parameters as the
   # Rails form helpers with some additions to create the bootstrap markup.
@@ -413,15 +427,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
       # Add class form-control and any additional classes to the input.
       options[:class] = "form-control #{options[:class]}".strip
 
-      # Some inputs expect html options like class or id as a separate parameter.
-      # Simply add all remaning options to to that parameter.
-      html_options = options.delete(:html) || {}
-      html_options.merge!(options) if %w(date_select time_select datetime_select
-        select_datetime select_date select_time select_second select_minute
-        select_hour select_day select_month select_year select collection_select
-        grouped_collection_select time_zone_select collection_radio_buttons
-        collection_check_boxes collection_radio_buttons).include?(input.to_s)
-
       div_wrapper(attribute, form_group_html) do
         template.concat self.label(attribute, label.html_safe, :class => label_class) unless label.is_a?(FalseClass)
 
@@ -429,13 +434,15 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           template.concat conditional_div_wrapper(input_group_html) {
             block.call if block.present? && add_on == :prepend
 
-            final_args = args << options
-            final_args << html_options if html_options.any?
-            template.concat super(attribute, *final_args)
+            if TwitterBootstrapFormFor::Datepicker.datepicker?(input, options)
+              template.concat TwitterBootstrapFormFor::Datepicker.new(self, attribute, *(args << options)).render
+            else
+              template.concat super(attribute, *(args + prepare_options(input, options)))
+            end
 
             template.concat error_span(attribute)
             # Append the add-on if :append was specified or if a add-on is
-            # present but neither :append nor :prepend were specified.
+            # present but neither :append nor :prepend where specified.
             # This can be used to add the given block on as a help-block.
             block.call if block.present? && (add_on == :append || add_on != :prepend)
           }
@@ -514,7 +521,6 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         # except if we they are rendered inline via the *toggles* method.
         div_wrapper_attributes = { :id => _wrapper_id(attribute), :class => _wrapper_classes(attribute, input_class) }
       end
-
 
       # In horizontal forms single checkboxes must be wrapped with a form group
       # and column classes. If the checkbox is created inside a toggles block we
@@ -673,6 +679,24 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
         'radio'
       else
         input.to_s
+      end
+    end
+
+
+    # Some inputs expect html options like class or id as a separate parameter.
+    # Simply add all remaning options to to that parameter.
+    def prepare_options(input, options)
+      html_options = options.delete(:html) || {}
+      html_options.merge!(options) if %w(date_select time_select datetime_select
+        select_datetime select_date select_time select_second select_minute
+        select_hour select_day select_month select_year select collection_select
+        grouped_collection_select time_zone_select collection_radio_buttons
+        collection_check_boxes collection_radio_buttons).include?(input.to_s)
+
+      if html_options.any?
+        [options, html_options]
+      else
+        [options]
       end
     end
 end

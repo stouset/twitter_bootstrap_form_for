@@ -42,9 +42,10 @@ class FormBuilderTest < ActionView::TestCase
     assert_select 'div.form-group > div.foo-class'
   end
 
-  test 'it should create a date select and add form control class' do
-    with_input_for @user, :born_on, :date_select
-    assert_select 'div.form-group > select.form-control'
+  test 'it should create a original text field' do
+    with_input_for @user, :email, :original_text_field
+    assert_select 'div.form-group', 0
+    assert_select 'form > input'
   end
 
   test 'it should hightlight required fields' do

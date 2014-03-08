@@ -59,6 +59,10 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
     = f.text_field :twitter_id, 'Twitter', add_on: :prepend do
       %span.input-group-addon @
 
+    / generate a datepicker (to generate a regulare date_select field use
+    / "datepicker: false" as a option)
+    = f.date_select :born_on
+
     / generate a single checkbox
     = f.check_box :agree
 
@@ -87,5 +91,50 @@ That's it. All of the Rails field helpers you know and love work just like
 their normal FormBuilder counterparts, but with minor extensions to expose
 the functionality anticipated by Twitter Bootstrap.
 
+## Datepicker ##
+
+By default a datepicker is rendered for date and/or time inputs via the
+bootstrap-datepicker-rails Gem. You need require "twitter_bootstrap_form_for"
+in your stylesheet and javascript manifest files to make it work.
+
+In "app/assets/javascripts/application.js" add
+
+  //= require twitter_bootstrap_form_for
+
+In "app/assets/stylesheets/application.css" add
+
+  *= require twitter_bootstrap_form_for
+
+To create a datepicker in your form use
+
+  = f.date_select :born_on
+
+To customize the datepicker use
+
+  = f.date_select :born_on, datepicker: { language: 'de', today_btn: 'linked', today_highlight: true, autoclose: true }
+
+Datepicker options are documented at https://github.com/eternicode/bootstrap-datepicker but
+make sure you use the Ruby dash syntax when specifying the options via the form helper.
+Write "today_btn" instead of "todayBtn". More examples via http://eternicode.github.io/bootstrap-datepicker/
+
+If you set a language different from english "en" you need to include the localized
+javascript files in your "app/assets/javascripts/application.js" file right where you
+require "twitter_bootstrap_form_for" like this:
+
+  //= require bootstrap-datepicker/locales/bootstrap-datepicker.de.js
+  //= require bootstrap-datepicker/locales/bootstrap-datepicker.es.js
+  //= require bootstrap-datepicker/locales/bootstrap-datepicker.fr.js
+  ...
+
+To disable the datepicker and render a regular input field use
+
+  = f.date_select :born_on, datepicker: false
+
+Important! The datepicker uses the Rails default date format from I18n.t('date.formats.default').
+If change that via the "format" option on the datepicker make sure Rails can parse that
+custom format. You might need to overwrite the attribute setter on your model for that.
+
+
 [Twitter Bootstrap]: http://twitter.github.com/bootstrap
 [bootstrap-sass]: https://github.com/twbs/bootstrap-sass
+[bootstrap-datepicker-rails]: https://github.com/Nerian/bootstrap-datepicker-rails

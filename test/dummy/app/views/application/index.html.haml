@@ -35,6 +35,10 @@
       = f.text_field :twitter_id, 'Twitter', add_on: :prepend do
         %span.input-group-addon @
 
+      / generate a datepicker (to generate a regulare date_select field use
+      / "datepicker: false" as a option)
+      = f.date_select :born_on
+
       / inline inputs are not automatically labeled
       -#
         TODO: Removed. See comment on *FormBuilder#inline*.
