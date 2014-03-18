@@ -1,4 +1,4 @@
-require 'twitter_bootstrap_form_for'
+# require 'twitter_bootstrap_form_for'
 
 module TwitterBootstrapFormFor::FormHelpers
   [:form_for, :fields_for].each do |method|
@@ -36,14 +36,13 @@ module TwitterBootstrapFormFor::FormHelpers
   end
 
   private
+    BLANK_FIELD_ERROR_PROC = lambda {|input, _| input }
 
-  BLANK_FIELD_ERROR_PROC = lambda {|input, _| input }
-
-  def _override_field_error_proc
-    original_field_error_proc           = ::ActionView::Base.field_error_proc
-    ::ActionView::Base.field_error_proc = BLANK_FIELD_ERROR_PROC
-    yield
-  ensure
-    ::ActionView::Base.field_error_proc = original_field_error_proc
-  end
+    def _override_field_error_proc
+      original_field_error_proc           = ::ActionView::Base.field_error_proc
+      ::ActionView::Base.field_error_proc = BLANK_FIELD_ERROR_PROC
+      yield
+    ensure
+      ::ActionView::Base.field_error_proc = original_field_error_proc
+    end
 end
