@@ -1,0 +1,67 @@
+.container
+  %h1 Welcome
+
+  / twitter_bootstrap_form_for @user, layout: 'vertical (default) OR horizontal OR inline', default_div_class: 'col-lg-10 (default)', role: 'form (default)' do |user|
+  = twitter_bootstrap_form_for User.new, layout: :horizontal do |f|
+
+    / wraps a section in a fieldset with the provided legend text
+    = f.inputs 'Sign up', class: 'sign_up' do
+
+      / generate a email field
+      = f.email_field :email
+
+      / required fields are marked with an * prepended to their labels.
+      / A field is required if the model responds with "true" to "[attribute]_required?"
+      / or if you specify "required: true|false" on the form field.
+      = f.email_field :email, required: true
+
+      / generate a text field with a custom label, a placeholder text, custom attributes
+      / (class and id) for the input element, a custom class for the wrapper around the input element
+      / and custom attributes for the form-group wrapper.
+      = f.text_field :name, 'Username', placeholder: 'Choose your user name.', class: 'input-lg', id: 'username-input',
+          div_class: 'col-md-6',
+          form_group_html: { id: 'bar', class: 'foo' }
+
+      / generate a password field with a descriptive aside
+      = f.password_field :password do
+        %span.help-block
+          Must be no larger than 6 characters<br/>
+          Must contain only the letters 'x' or 'p'
+
+      / generate a field with a custom label
+      = f.password_field :password_confirmation, 'Confirm Password'
+
+      / generate a field with custom add-ons
+      = f.text_field :twitter_id, 'Twitter', add_on: :prepend do
+        %span.input-group-addon @
+
+      / generate a datepicker (to generate a regulare date_select field use
+      / "datepicker: false" as a option)
+      = f.date_select :born_on
+
+      / inline inputs are not automatically labeled
+      -#
+        TODO: Removed. See comment on *FormBuilder#inline*.
+        = f.inline 'Interests' do |inline|
+          #{inline.text_field :interest_1 },
+          #{inline.text_field :interest_2 }, and
+          #{inline.text_field :interest_3 }
+
+      / generate a single checkbox
+      = f.check_box :agree
+
+      / generate a group of checkboxes using the *toggles* method and add custom labels
+      = f.toggles 'Agreements' do
+        = f.check_box :agree,   'I agree to the abusive Terms and Conditions'
+        = f.check_box :spam,    'I agree to receive all sorts of spam'
+        = f.check_box :spammer, 'I agree to let the site spam others through my Twitter account'
+
+      / generate a group of radio buttons using the *toggles* method and add custom labels
+      = f.toggles 'Email Preferences' do
+        = f.radio_button :email, 'HTML Email', :html, checked: true
+        = f.radio_button :email, 'Plain Text', :plain
+
+    / wraps buttons in a distinctive style
+    = f.actions do
+      = f.submit 'Sign up'
+      = button_tag  'Cancel', type: 'reset', class: 'btn'

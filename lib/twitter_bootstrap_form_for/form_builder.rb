@@ -1,6 +1,3 @@
-require 'twitter_bootstrap_form_for'
-require 'action_view/helpers'
-
 class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   include TwitterBootstrapFormFor::FormHelpers
 
@@ -23,74 +20,258 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
   ]
 
   #
-  # Wraps the contents of the block passed in a fieldset with optional
-  # +legend+ text.
+  # Renders all or selected error messages in central place.
+  # By default all error messages are rendered on the field that has the error
+  # so this helper is only necessary if you have errors on your model that have
+  # no corresponding field in the form such as hidden fields or *:base*.
   #
-  def inputs(legend = nil, options = {}, &block)
-    template.content_tag(:fieldset, options) do
-      template.concat template.content_tag(:legend, legend) unless legend.nil?
-      block.call
+  #   f.errors
+  #
+  #   <div id="error_explanation">
+  #     <h2>There were problems with the following fields:</h2>
+  #     <ul>
+  #       <li>Username can't be blank</li>
+  #       <li>Password is required</li>
+  #     </ul>
+  #   </div>
+  #
+  # To prevent errors from beeing listed twice you can use the *only* or *except*
+  # option on the errors helper like this:
+  #
+  #   f.errors only: :base
+  #
+  #   f.errors except: [:username, :email, :password]
+  #
+  # Additional options passed to the method are added as html options to the wrapper div.
+  #
+  # TODO: It would be cool if we could just figure out which error messages where already
+  # rendered and then display the remaning errors automatically without the need to add
+  # the *errors* helper and without the *only* and *except* fiddling.
+  def errors(*args)
+    return unless self.object.errors.any?
+    options = args.extract_options!
+
+    errors = {}
+    self.object.errors.each do |field|
+      errors[field] = self.object.errors.full_messages_for(field)
+    end
+
+    if except = options.delete(:except)
+      errors.except!(*(except.is_a?(Array) ? except : [except]))
+    elsif only = options.delete(:only)
+      errors.slice!(*(only.is_a?(Array) ? only : [only]))
+    end
+
+    return unless errors.any?
+
+    # The I18n key *errors.messages.not_saved* is acually what Rails suggests as
+    # the error messages headline but i think this is confusing because if we
+    # just display error messages for *:base* it would say "1 error prohibited this model from being saved:"
+    # but there might be more error messages on the fields further down the form...
+    # headline = options[:headline] || I18n.t('errors.messages.not_saved', count: errors.count, resource: self.object.class.model_name.human.downcase, default: "#{template.pluralize(errors.count, "error")} prohibited this #{self.object.class.model_name.human} from being saved:")
+    headline = options.delete(:headline) || I18n.t('errors.template.body', default: 'There were problems with the following fields:')
+
+    options[:id] ||= 'error_explanation'
+
+    template.content_tag(:div, options) do
+      template.concat template.content_tag(:h2, headline)
+      template.concat template.content_tag(:ul) {
+       errors.each do |field, messages|
+          messages.each do |message|
+            template.concat template.content_tag(:li, message)
+          end
+        end
+      }
     end
   end
 
   #
-  # Wraps groups of toggles (radio buttons, checkboxes) with a single label
-  # and the appropriate markup. All toggle buttons should be rendered
-  # inside of here, and will not look correct unless they are.
+  # Wraps the contents of the passed block with a fieldset and a (optional) legend.
   #
-  def toggles(*args, &block)
+  #   f.inputs 'Sign-up' do
+  #     f.text_field :username
+  #   end
+  #
+  #   <fieldset>
+  #     <legend>Sign-up</legend>
+  #     ...
+  #   </fieldset>
+  #
+  # The legend is optional.
+  #
+  #   f.inputs do
+  #     f.text_field :username
+  #   end
+  #
+  # Any additional options are passed on to the fieldset.
+  #
+  #   f.inputs 'Sign-up', :class => 'foo', :id => 'bar' do
+  #     f.text_field :username
+  #   end
+  #
+  #   <fieldset class="foo" id="bar">
+  #     <legend>Sign-up</legend>
+  #     ...
+  #   </fieldset>
+  #
+  # To pass options to the legend tag use legend_options
+  #
+  #   f.inputs 'Sign-up', :class => 'foo', :id => 'bar', :legend_options { :class => 'foo-bar' }
+  #
+  def inputs(*args)
+    options = args.extract_options!
+    legend = args.first
+    legend_options = options.delete(:legend_options)
+
+    template.content_tag(:fieldset, options) do
+      template.concat template.content_tag(:legend, legend, legend_options) if legend
+      yield
+    end
+  end
+
+  #
+  # Wraps groups of toggles (radio buttons, checkboxes) with a label and the appropriate markup.
+  # Remember: Always put checkboxes and radiobuttons in a +toggles+ block or the layout
+  # will be wrong. Exeption: A single checkbox can be added without a toggles block.
+  #
+  #   f.toggles 'Favorite Colors' do
+  #     f.checkbox :red
+  #     f.checkbox :green
+  #   end
+  #
+  #   <div class="form-group">
+  #     <label>Favorite Colors</label>
+  #     ...
+  #   </div>
+  #
+  # The group label is optional.
+  #
+  #   f.toggles do
+  #     f.checkbox :accept_terms
+  #     f.checkbox :accept_privacy_policy
+  #   end
+  #
+  # To create a custom label for the checkbox use
+  #
+  #   f.checkbox :accept_terms, 'I accept the terms of use.'
+  #
+  # You can create inline checkboxes by adding a style option.
+  # Default style is +stacked+.
+  #
+  #   f.toggles 'Favorite Colors', :style => :inline do
+  #     f.checkbox :red
+  #     f.checkbox :green
+  #   end
+  #
+  #   <div class="form-group">
+  #     <label>Favorite Colors</label>
+  #     <label class="checkbox-inline">
+  #       <input id="red" name="red" type="checkbox" value="1" /> Red
+  #     </label>
+  #     <label class="checkbox-inline">
+  #       <input id="green" name="green" type="checkbox" value="1" /> Green
+  #     </label>
+  #   </div>
+  #
+  # To change to form group label class pass the +label_class+ option.
+  #
+  def toggles(*args)
+    # A flag that we are inside the toggles method because the
+    # checkbox/radiobutton markup is different then. It would be more cool if we
+    # could add this when calling the checkbox/radiobutton method but i couldn't
+    # figure out how. Same for @toggles_style.
+    @toggles = true
 
     options  = args.extract_options!
     label    = args.first.nil? ? '' : args.shift
-
-    # Pull out the label class
-    label_class = options[:label_class] || @options[:default_label_class]
-    options.delete :label_class
+    label_class = options.delete(:label_class) || @options[:default_label_class]
 
     # This set of toggles will conform to either the stacked or inline style
     options[:style] ||= @options[:default_toggle_style]
     raise "Invalid style passed to toggles: #{options[:style].to_s}. Must be :stacked or :inline" unless [:stacked, :inline].include?(options[:style])
     @toggles_style = options[:style]
 
-    # Not necessary, but makes it convenient if we are using the horizontal form style
-    template.content_tag :div, :class => 'form-group' do
-      template.concat self.label(nil, label, :class => label_class) if label.present?
+    html = template.content_tag :div, :class => 'form-group' do
+      template.concat self.label(nil, label, :for => nil, :class => label_class) if label.present?
 
-			if @options[:layout] == :horizontal
+      if @options[:layout] == :horizontal
         html_class = label.present? ? @options[:default_div_class] : 'col-lg-offset-2 col-lg-10'
       end
-      template.concat template.content_tag(:div, :class => html_class) { block.call }
+
+      template.concat conditional_div_wrapper(:class => html_class) { yield }
     end
+    @toggles = false
+    @toggles_style = nil
+    html
   end
 
   #
   # Wraps action buttons into their own styled container.
+  # In horizontal forms buttons must be wrapped with extra markup or the layout
+  # will be wrong. You might leave the actions out on vertical forms but
+  # you sure need it on horizontal forms. So it might be a good idea to always
+  # use the actions block anyway.
+  #
+  #   f.actions do
+  #     f.submit, "Update User"
+  #
+  # Output for vertical forms
+  #   <input class="btn btn-primary" name="commit" type="submit" value="Update User" />
+  #
+  # Output for horizontal forms
+  #   <div class="form-group" id="user_actions">
+  #     <div class="col-lg-offset-2 col-lg-10">
+  #       <input class="btn btn-primary" name="commit" type="submit" value="Sign up" />
+  #     </div>
+  #   </div>
+  #
+  # To change the column div class pass the +class+ option.
+  #
+  #   f.actions :class => 'col-lg-offset-2 col-lg-10' do
+  #     f.submit, "Update User"
   #
   def actions(*args, &block)
     if @options[:layout] == :horizontal
-      options  = args.extract_options!
+      options = args.extract_options!
       options[:class] ||= 'col-lg-offset-2 col-lg-10'
-      self.div_wrapper(:div, :class => 'form-group') do
+      conditional_div_wrapper(:id => "#{_object_name}_actions", :class => 'form-group') do
         template.content_tag(:div, :class => options[:class], &block)
       end
     else
-      block.call
+      template.capture(&block)
     end
   end
 
+
   #
-  # Renders a submit tag with default classes to style it as a primary form
-  # button.
+  # Renders a submit tag with default classes to style it as a primary button.
+  # Remember: Always put buttons inside actions or the layout will be wrong in
+  # horizontal forms.
+  #
+  #   f.actions do
+  #     f.submit, "Update User"
+  #
+  #   <input class="btn btn-primary" name="commit" type="submit" value="Update User" />
+  #
+  # And additional options are passed on to the input tag
+  #
+  #   f.actions do
+  #     f.submit, "Update User", :class => 'btn btn-warning', :id => 'foo'
+  #
+  #   <input class="btn btn-warning" id="foo" name="commit" type="submit" value="Update User" />
   #
   def submit(value = nil, options = {})
     options[:class] ||= 'btn btn-primary'
-
     super value, options
   end
 
   #
   # Creates bootstrap wrapping before yielding a plain old rails builder
   # to the supplied block.
+  # FIXME: This is no Bootstrap 3 markup. It is also not mentioned in the
+  # Bootstrap docs so maybe we should remove this?
+  # If it should stay then http://stackoverflow.com/a/18429555/1392226 would
+  # be a straight forward markup. Or http://stackoverflow.com/a/12212196/1392226
   #
   def inline(label = nil, &block)
     template.content_tag(:div) do
@@ -108,71 +289,304 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     end
   end
 
+  # We overwrite the default form builder methods with our own methods later and
+  # we can access the original methods inside the overwritten method via *super*.
+  # But sometimes it might be necessary to access the original methods outside
+  # the overwritten method. For this we create methods here that make this possible
+  # via "original_[input]". For example to access the original *text_field* method use:
+  #
+  #   f.original_text_field
+  #
+  INPUTS.each do |input|
+    define_method "original_#{input.to_s}" do |attribute, *args, &block|
+      self.class.superclass.instance_method(input).bind(self).call(attribute, *args, &block)
+    end
+  end
+
+  #
+  # Creates the different inputs. We support the same parameters as the
+  # Rails form helpers with some additions to create the bootstrap markup.
+  #
+  # Examples: Check the readme for a complete example on how to create a
+  # form with twitter_bootstrap_form_for.
+  #
+  #   = f.email_field :email
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <label for="user_email">Email</label>
+  #     <input class="form-control" id="user_email" name="user[email]" type="text" />
+  #   </div>
+  #
+  #   = f.email_field :email, 'Your email address', :placeholder => 'me@example.com', :class => 'input-lg', :div_class => 'col-md-6'
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <label for="user_email">Your email address</label>
+  #     <div class="col-md-6">
+  #       <input class="form-control input-lg" id="user_email" name="user[email]" placeholder="me@example.com" type="text" />
+  #     </div>
+  #   </div>
+  #
+  # To create a help text:
+  #
+  #   = f.email_field :email do
+  #     %span.help-block We won't send no spam
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <label for="user_email">Email</label>
+  #     <input class="form-control" id="user_email" name="user[email]" type="text" />
+  #     <span class="help-block">We won't send no spam</span>
+  #   </div>
+  #
+  # To create a add on:
+  #
+  #   = f.email_field :email, :add_on => :prepend do
+  #     %span.input-group-addon @
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <label for="user_email">Email</label>
+  #     <div class="input-group">
+  #       <span class="input-group-addon">@</span>
+  #       <input class="form-control" id="user_email" name="user[email]" type="text" />
+  #     </div>
+  #   </div>
+  #
+  # To remove the label
+  #
+  #   = f.email_field :email, false
+  #
+  #   <div class="form-group" id="user_email_input">
+  #     <input class="form-control" id="user_email" name="user[email]" type="text" />
+  #   </div>
+  #
+  # It will automatically create a placeholder if you create no label (label==false).
+  # Except if you specify "placeholder: false" as a option. If you specify
+  # "placeholder: true" if will create a placeholder with the text from the label
+  # or use the (translated) attribute name if no label is specified.
+  #
+  # If a label is present and the field is required we append a visual highlight
+  # to the label that will look like this by default:
+  #
+  #   Label Text <span class="required" title="required">*</span>
+  #
+  # To translate the title tag add a key "helpers.required_field_label" to
+  # your locale file. To use custom html for the label use the key
+  # "helpers.required_field_label_html" instead.
+  #
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
+      options = args.extract_options!
 
-      options  = args.extract_options!
-      label    = args.first.nil? ? '' : args.shift
-      label_class = options[:label_class] || @options[:default_label_class]
-      options.delete :label_class
+      label = args.shift
+      label = human_attribute_name(attribute) unless label.is_a?(FalseClass) || label.present?
+      label_class = options.delete(:label_class) || @options[:default_label_class]
 
-      self.div_wrapper(attribute, :class => 'form-group') do
-        template.concat self.label(attribute, label, :class => label_class) if label
+      if options[:placeholder].is_a?(FalseClass)
+        options.delete(:placeholder)
+      elsif options[:placeholder].is_a?(TrueClass)
+        options[:placeholder] = label || human_attribute_name(attribute)
+      elsif options[:placeholder].blank? && label.is_a?(FalseClass)
+        options[:placeholder] = human_attribute_name(attribute)
+      end
 
-        options[:class] ||= 'form-control'
-        classes = []
-        if options[:div_class].present?
-          classes << options[:div_class]
-        elsif @options[:default_div_class].present?
-          classes <<  @options[:default_div_class]
+      # Check and mark required fields. If the options have a key "required" we
+      # use this otherwise we check if the model field is required.
+      required = options.has_key?(:required) ? options[:required] : self.object.try("#{attribute}_required?") || false
+      options[:required] = required
+
+      if required && label
+        if I18n.t('helpers.required_field_label_html', default: '').presence
+          label += " #{I18n.t('helpers.required_field_label_html', default: '')}".html_safe
+        else
+          label += " <span class=\"required\" title=\"#{I18n.t('helpers.required_field_label', default: 'required')}\">*</span>".html_safe
         end
-        classes << ('input-' + options.delete(:add_on).to_s) if options[:add_on]
-        template.concat template.content_tag(:div, :class => classes.join(' ')) {
-          block.call if block.present? and classes.include?('input-prepend')
-          template.concat super(attribute, *(args << options))
-          template.concat error_span(attribute)
-          block.call if block.present? and classes.include?('input-append')
+      end
+
+      form_group_html = options.delete(:form_group_html) || {}
+      form_group_html[:class] = "form-group #{form_group_html[:class]}".strip
+
+      add_on = options.delete(:add_on)
+
+      # We need to create a extra wrapper div for input addons or the alignment
+      # will be off when used in horizontal forms.
+      input_group_html = options.delete(:input_group_html) || {}
+      input_group_html[:class] = "input-group #{input_group_html[:class]}".strip if add_on.present?
+
+      # TODO: Would be nicer if we would just call this *div_html* like
+      # we do for *form_group_html* so we can also set other attributes and
+      # not just the class.
+      div_classes = []
+      if options[:div_class].present?
+        div_classes << options.delete(:div_class)
+      elsif @options[:default_div_class].present?
+        div_classes <<  @options[:default_div_class]
+      end
+
+      # Add class form-control and any additional classes to the input.
+      options[:class] = "form-control #{options[:class]}".strip
+
+      div_wrapper(attribute, form_group_html) do
+        template.concat self.label(attribute, label.html_safe, :class => label_class) unless label.is_a?(FalseClass)
+
+        template.concat conditional_div_wrapper(:class => div_classes.join(' ').presence) {
+          template.concat conditional_div_wrapper(input_group_html) {
+            block.call if block.present? && add_on == :prepend
+
+            if TwitterBootstrapFormFor::Datepicker.datepicker?(input, options)
+              template.concat TwitterBootstrapFormFor::Datepicker.new(self, attribute, *(args << options)).render
+            else
+              template.concat super(attribute, *(args + prepare_options(input, options)))
+            end
+
+            template.concat error_span(attribute)
+            # Append the add-on if :append was specified or if a add-on is
+            # present but neither :append nor :prepend where specified.
+            # This can be used to add the given block on as a help-block.
+            block.call if block.present? && (add_on == :append || add_on != :prepend)
+          }
         }
       end
     end
   end
 
+  #
+  # Create check_box or radio_button inputs. We support the same parameters as
+  # the Rails form helpers with some additions to create the bootstrap markup.
+  #
+  # Examples: Check the readme for a complete example on how to create a
+  # form with twitter_bootstrap_form_for.
+  #
+  # To generate a single checkbox use
+  #
+  #   = f.check_box :agree
+  #
+  #   <div class="checkbox" id="user_agree_input">
+  #     <label for="user_agree">
+  #       <input name="user[agree]" type="hidden" value="0">
+  #       <input id="user_agree" name="user[agree]" type="checkbox" value="1">
+  #       Agree
+  #     </label>
+  #   </div>
+  #
+  # To generate a group of checkboxes use the *toggles* method
+  # We also show how to set custom labels for checkboxes. Labels work the same
+  # as for the regular input fields.
+  #
+  #   = f.toggles 'Agreements' do
+  #     = f.check_box :agree,   'I agree to the abusive Terms and Conditions'
+  #     = f.check_box :spam,    'I agree to receive all sorts of spam'
+  #     = f.check_box :spammer, 'I agree to let the site spam others through my Twitter account'
+  #
+  #   <div class="form-group">
+  #     <label>Agreements</label>
+  #     <div class="checkbox" id="user_agree_input">
+  #       <label for="user_agree">
+  #         <input name="user[agree]" type="hidden" value="0">
+  #         <input id="user_agree" name="user[agree]" type="checkbox" value="1">
+  #         I agree to the abusive Terms and Conditions
+  #       </label>
+  #     </div>
+  #     <div class="checkbox" id="user_spam_input">
+  #       <label for="user_spam">
+  #         <input name="user[spam]" type="hidden" value="0">
+  #         <input id="user_spam" name="user[spam]" type="checkbox" value="1">
+  #         I agree to receive all sorts of spam
+  #       </label>
+  #     </div>
+  #     <div class="checkbox" id="user_spammer_input">
+  #       <label for="user_spammer">
+  #         <input name="user[spammer]" type="hidden" value="0">
+  #         <input id="user_spammer" name="user[spammer]" type="checkbox" value="1">
+  #         I agree to let the site spam others through my Twitter account
+  #       </label>
+  #     </div>
+  #   </div>
+  #
   TOGGLES.each do |toggle|
-    define_method toggle do |attribute, *args, &block|
-      
-      label       = args.first.nil? ? '' : args.shift
-      target      = self.object_name.to_s + '_' + attribute.to_s
-      label_attrs = toggle == :check_box ? { :for => target } : {}
+    define_method toggle do |attribute, *args|
+      options = args.extract_options!
 
-      template.concat template.content_tag(:label, label_attrs) {
-        template.concat super(attribute, *args)
-        template.concat ' ' # give the input and span some room
-        template.concat template.content_tag(:span, label)
-      }
-      if toggle == :check_box
-        template.concat template.content_tag(:div, :class => "has-error") {
-          template.concat error_span(attribute)
-        } if errors_on?(attribute)
+      label = args.shift || human_attribute_name(attribute)
+      input_class = bootstrap_class_for_input(toggle)
+
+      # If the checkbox/radiobutton style is :inline we need to add
+      # a style class to the label. If the style is :stacked (default) the
+      # checkbox must be wrapped with a div.checkbox.
+      if @toggles_style == :inline
+        label_class = "#{input_class}-inline"
+      else
+        # Checkboxes and radiobuttons are wrapped with a "div.checkbox" by default
+        # except if we they are rendered inline via the *toggles* method.
+        div_wrapper_attributes = { :id => _wrapper_id(attribute), :class => _wrapper_classes(attribute, input_class) }
       end
+
+      # In horizontal forms single checkboxes must be wrapped with a form group
+      # and column classes. If the checkbox is created inside a toggles block we
+      # don't need to do this because this is then done in the toggles method.
+      if @options[:layout] == :horizontal && !@toggles
+        form_group_attributes = { :class => 'form-group' }
+        column_attributes = { :class => 'col-lg-offset-2 col-lg-10' }
+      end
+
+      conditional_div_wrapper(form_group_attributes) do
+        conditional_div_wrapper(column_attributes) do
+          conditional_div_wrapper(div_wrapper_attributes) do
+            template.concat self.label(attribute, :class => label_class) {
+              template.concat super(attribute, *(args << options))
+              template.concat label
+            }
+
+            # I think the error span must be rendered for checkboxes and radiobuttons
+            # and not just for checkboxes. Also it doesn't seem that the extra div
+            # around the error span is needed because the "has-error" class is
+            # now attached to the div.checkbox wrapper.
+            # I leave this here for now because maybe I have overlooked something...
+            # if toggle == :check_box
+            #   template.concat template.content_tag(:div, :class => "has-error") {
+            #     template.concat error_span(attribute)
+            #   } if errors_on?(attribute)
+            # end
+
+            template.concat error_span(attribute)
+          end
+        end
+      end
+
     end
   end
+
 
   protected
 
   #
-  # Wraps the contents of +block+ inside a +tag+ with an appropriate class and
+  # Wraps the contents of +block+ inside a +div+ with an appropriate class and
   # id for the object's +attribute+. HTML options can be overridden by passing
   # an +options+ hash.
   #
   def div_wrapper(attribute, options = {}, &block)
-    options[:id]    = _wrapper_id      attribute, options[:id]
-    options[:class] = _wrapper_classes attribute, options[:class]
+    options[:id] = _wrapper_id(attribute, options[:id])
+    options[:class] = _wrapper_classes(attribute, options[:class])
 
     template.content_tag :div, options, &block
   end
 
+  #
+  # Wraps the contents of +block+ inside a +div+ if HTML options are present.
+  # If no options are present the given block is not wrapped in a div.
+  # Options with blank values (nil, '') will be ignored.
+  #
+  def conditional_div_wrapper(options = {}, &block)
+    # Remove empty entries from options hash.
+    opts = present_options(options)
+
+    if opts.any?
+      template.content_tag :div, opts, &block
+    else
+      template.capture(&block)
+    end
+  end
+
   def error_span(attribute, options = {})
-    options[:class] ||= 'help-inline'
+    options[:class] ||= 'help-block validator-error'
 
     template.content_tag(
       :span, self.errors_for(attribute),
@@ -188,44 +602,98 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     self.object.errors[attribute].try(:join, ', ')
   end
 
+
   private
 
-  #
-  # Returns an HTML id to uniquely identify the markup around an input field.
-  # If a +default+ is provided, it uses that one instead.
-  #
-  def _wrapper_id(attribute, default = nil)
-    default || [
-      _object_name + _object_index,
-      _attribute_name(attribute),
-      'input'
-     ].join('_')
-  end
+    #
+    # Returns an HTML id to uniquely identify the markup around an input field.
+    # If a +default+ is provided, it uses that one instead.
+    #
+    def _wrapper_id(attribute, default = nil)
+      default || [
+        _object_name + _object_index,
+        _attribute_name(attribute),
+        'input'
+       ].join('_')
+    end
 
-  #
-  # Returns any classes necessary for the wrapper div around fields for
-  # +attribute+, such as 'errors' if any errors are present on the attribute.
-  # This merges any +classes+ passed in.
-  #
-  def _wrapper_classes(attribute, *classes)
-    classes.compact.tap do |klasses|
-      klasses.push 'has-error' if self.errors_on?(attribute)
-    end.join(' ')
-  end
+    #
+    # Returns any classes necessary for the wrapper div around fields for
+    # +attribute+, such as 'errors' if any errors are present on the attribute.
+    # This merges any +classes+ passed in.
+    #
+    def _wrapper_classes(attribute, *classes)
+      classes.compact.tap do |klasses|
+        klasses.push 'has-error' if self.errors_on?(attribute)
+      end.join(' ')
+    end
 
-  def _attribute_name(attribute)
-    attribute.to_s.gsub(/[\?\/\-]$/, '')
-  end
+    def _attribute_name(attribute)
+      attribute.to_s.gsub(/[\?\/\-]$/, '')
+    end
 
-  def _object_name
-    self.object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/, "_").sub(/_$/, "")
-  end
+    def _object_name
+      self.object_name.to_s.gsub(/\]\[|[^-a-zA-Z0-9:.]/, "_").sub(/_$/, "")
+    end
 
-  def _object_index
-    case
-      when options.has_key?(:index) then options[:index]
-      when defined?(@auto_index)    then @auto_index
-      else                               nil
-    end.to_s
-  end
+    def _object_index
+      case
+        when options.has_key?(:index) then options[:index]
+        when defined?(@auto_index)    then @auto_index
+        else                               nil
+      end.to_s
+    end
+
+    def human_attribute_name(attribute)
+      if self.object.class.respond_to?(:human_attribute_name)
+        # Marking this as *html_safe* so we can use html in I18n translation files.
+        self.object.class.human_attribute_name(attribute).html_safe
+      else
+        attribute.to_s.humanize
+      end
+    end
+
+    #
+    # Return only those options from a options hash that have values.
+    #   present_options {:id => 1, :class => '', :role => nil}
+    #   => {:id => 1}
+    #
+    def present_options(options)
+      options ||= {}
+      options.select {|option,value| value.present? }
+    end
+
+    #
+    # Bootstrap input classes are different from input names. This method returns
+    # the right class for the right input
+    #  bootstrap_class_for_input :radio_button
+    #  => 'radio'
+    #
+    def bootstrap_class_for_input(input)
+      if input.to_s == 'check_box'
+        'checkbox'
+      elsif input.to_s == 'radio_button'
+        'radio'
+      else
+        input.to_s
+      end
+    end
+
+
+    # Some inputs expect html options like class or id as a separate parameter.
+    # Simply add all remaning options to to that parameter.
+    def prepare_options(input, options)
+      html_options = options.delete(:html) || {}
+      html_options.merge!(options) if %w(date_select time_select datetime_select
+        select_datetime select_date select_time select_second select_minute
+        select_hour select_day select_month select_year select collection_select
+        grouped_collection_select time_zone_select collection_radio_buttons
+        collection_check_boxes collection_radio_buttons).include?(input.to_s)
+
+      if html_options.any?
+        [options, html_options]
+      else
+        [options]
+      end
+    end
 end

@@ -1,8 +1,6 @@
 Twitter Bootstrap Form For
 ==========================
 
-*_WARNING! This is for Rails 4 and Bootstrap 3 (current in RC)._*
-
 `twitter_bootstrap_form_for` is a Rails FormBuilder DSL that, like Formtastic,
 makes it easier to create semantically awesome, readily-stylable, and
 wonderfully accessible HTML forms in your Rails applications. It abides by
@@ -16,82 +14,127 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
 ## Dependencies ##
 
  * Rails 4
- * Bootstrap-sass, pull from branch 3 off github
-
-`
-    gem 'bootstrap-sass', :git => 'git://github.com/thomas-mcdonald/bootstrap-sass.git', :branch => '3'
-`
+ * Bootstrap 3 (Checkout the [bootstrap-sass] gem.)
 
 ## Syntax ##
 
 ```haml
-= twitter_bootstrap_form_for @user, layout: 'vertical (default) OR horizontal OR inline', default_div_class: 'col-lg-10 (default)', role: 'form (default)' do |user|
+= twitter_bootstrap_form_for @user, layout: [:vertical (default) OR :horizontal OR :inline], default_div_class: 'col-lg-10 (default)', role: 'form (default)' do |f|
+  // By default error messages on fields are rendered inline with the field and you
+  // don't have to do something special to display them. But if you have error messages
+  // on your model that have no corresponding field in the form such as hidden fields
+  // or if you use *model.errors.add :base* for example you can use the following helper.
+  // To prevent errors from beeing listed twice you can use the *only* or *except*
+  // option like this *= f.errors only: :base* for example.
+  = f.errors
 
   / wraps a section in a fieldset with the provided legend text
-  = user.inputs 'Sign up', :class => 'sign_up' do
+  = f.inputs 'Sign up', class: 'sign_up' do
 
-    / generates a standard email field; also showing overriding the div_class around the input element on a horizontal form
-    = user.email_field :email, :placeholder => 'me@example.com', div_class: 'col-md-6'
+    / generate a email field
+    = f.email_field :email
 
-    / generates a password field with a descriptive aside
-    = user.password_field :password do
+    / required fields are marked with an * prepended to their labels.
+    / A field is required if the model responds with "true" to "[attribute]_required?"
+    / or if you specify "required: true|false" on the form field.
+    = f.email_field :email, required: true
+
+    / generate a text field with a custom label, a placeholder text, custom attributes
+    / (class and id) for the input element, a custom class for the wrapper around the input element
+    / and custom attributes for the form-group wrapper.
+    = f.text_field :name, 'Username', placeholder: 'Choose your user name.', class: 'input-lg', id: 'username-input',
+        div_class: 'col-md-6',
+        form_group_html: { id: 'bar', class: 'foo' }
+
+    / generate a password field with a descriptive aside
+    = f.password_field :password do
       %span.help-block
         Must be no larger than 6 characters<br/>
         Must contain only the letters 'x' or 'p'
 
-    / a field with a custom label
-    = user.password_field :password_confirmation, 'Confirm Password'
+    / generate a field with a custom label
+    = f.password_field :password_confirmation, 'Confirm Password'
 
-    / input fields with custom add-ons
-    = user.text_field :twitter_id, 'Twitter', :class => 'medium', :add_on => :prepend do
-      %span.add-on @
+    / generate a field with custom add-ons
+    = f.text_field :twitter_id, 'Twitter', add_on: :prepend do
+      %span.input-group-addon @
 
-    / select fields now have the second parameter as a label
-    = user.date_select :born_on, 'Born on', {}, :class => 'small'
+    / generate a datepicker (to generate a regulare date_select field use
+    / "datepicker: false" as a option)
+    = f.date_select :born_on
 
-    / inline inputs are not automatically labeled
-    = user.inline 'Interests' do |inline|
-      #{inline.text_field :interest_1, :class => 'small'},
-      #{inline.text_field :interest_2, :class => 'small'}, and
-      #{inline.text_field :interest_3, :class => 'small'}
+    / generate a single checkbox
+    = f.check_box :agree
 
-    / group of radio buttons
-    = user.toggles 'Email Preferences' do
-      = user.radio_button :email, 'HTML Email', :html, :checked => true
-      = user.radio_button :email, 'Plain Text', :plain
+    / generate a group of checkboxes using the *toggles* method and add custom labels
+    = f.toggles 'Agreements' do
+      = f.check_box :agree,   'I agree to the abusive Terms and Conditions'
+      = f.check_box :spam,    'I agree to receive all sorts of spam'
+      = f.check_box :spammer, 'I agree to let the site spam others through my Twitter account'
 
-    / group of checkboxes
-    = user.toggles 'Agreements' do
-      = user.check_box :agree,   'I agree to the abusive Terms and Conditions'
-      = user.check_box :spam,    'I agree to receive all sorts of spam'
-      = user.check_box :spammer, 'I agree to let the site spam others through my Twitter account'
+    / generate a group of radio buttons using the *toggles* method and add custom labels
+    = f.toggles 'Email Preferences' do
+      = f.radio_button :email, 'HTML Email', :html, checked: true
+      = f.radio_button :email, 'Plain Text', :plain
 
   / wraps buttons in a distinctive style
-  = user.actions do
-    = user.submit 'Sign up'
-    = button_tag  'Cancel', :type => 'reset', :class => 'btn'
+  = f.actions do
+    = f.submit 'Sign up'
+    = button_tag  'Cancel', type: 'reset', class: 'btn'
 ```
 
 That code produces the following output, with no custom stylesheets.
 
-![](https://github.com/stouset/twitter_bootstrap_form_for/raw/master/examples/screenshot.png)
+![](examples/screenshot.png?raw=true)
 
 That's it. All of the Rails field helpers you know and love work just like
 their normal FormBuilder counterparts, but with minor extensions to expose
 the functionality anticipated by Twitter Bootstrap.
 
-## Form Helper Changes ##
+## Datepicker ##
 
-The changes this `FormBuilder` effects to the existing Rails form helpers is
-simple:
+By default a datepicker is rendered for date and/or time inputs via the
+bootstrap-datepicker-rails Gem. You need require "twitter_bootstrap_form_for"
+in your stylesheet and javascript manifest files to make it work.
 
-  * the second parameter becomes the label (pass false to disable, nil for default)
-  * the last options hash accepts an `:add_on` key
-  * if a block is passed, the HTML it outputs is placed immediately after the input
+In "app/assets/javascripts/application.js" add
 
-## Known Bugs ##
+  //= require twitter_bootstrap_form_for
 
-  - inline fields don't receive error markup ([issue #28])
+In "app/assets/stylesheets/application.css" add
 
-[Twitter Bootstrap]: http://twitter.github.com/bootstrap/
-[issue #28]:          https://github.com/stouset/twitter_bootstrap_form_for/issues/28
+  *= require twitter_bootstrap_form_for
+
+To create a datepicker in your form use
+
+  = f.date_select :born_on
+
+To customize the datepicker use
+
+  = f.date_select :born_on, datepicker: { language: 'de', today_btn: 'linked', today_highlight: true, autoclose: true }
+
+Datepicker options are documented at https://github.com/eternicode/bootstrap-datepicker but
+make sure you use the Ruby dash syntax when specifying the options via the form helper.
+Write "today_btn" instead of "todayBtn". More examples via http://eternicode.github.io/bootstrap-datepicker/
+
+If you set a language different from english "en" you need to include the localized
+javascript files in your "app/assets/javascripts/application.js" file right where you
+require "twitter_bootstrap_form_for" like this:
+
+  //= require bootstrap-datepicker/locales/bootstrap-datepicker.de.js
+  //= require bootstrap-datepicker/locales/bootstrap-datepicker.es.js
+  //= require bootstrap-datepicker/locales/bootstrap-datepicker.fr.js
+  ...
+
+To disable the datepicker and render a regular input field use
+
+  = f.date_select :born_on, datepicker: false
+
+Important! The datepicker uses the Rails default date format from I18n.t('date.formats.default').
+If change that via the "format" option on the datepicker make sure Rails can parse that
+custom format. You might need to overwrite the attribute setter on your model for that.
+
+
+[Twitter Bootstrap]: http://twitter.github.com/bootstrap
+[bootstrap-sass]: https://github.com/twbs/bootstrap-sass
+[bootstrap-datepicker-rails]: https://github.com/Nerian/bootstrap-datepicker-rails
