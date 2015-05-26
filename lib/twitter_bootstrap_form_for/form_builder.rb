@@ -140,7 +140,7 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
           input_group = options.delete(:input_group)
           tag = super(attribute, *(args << options))
           if input_group
-            template.concat template.content_tag(:div, :class => 'input-group') {
+            template.concat template.content_tag(:div, :class => 'input-group' + (input == :select ? ' select2-bootstrap-append' : '')) {
               template.concat tag
               template.concat template.content_tag(:span, :class => 'input-group-addon') {
                 template.concat input_group
