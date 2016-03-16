@@ -10,8 +10,8 @@ module TwitterBootstrapFormFor::FormHelpers
         raise "Specified form layout #{options[:layout].to_s} is invalid. Must be one of :vertical, :horizontal, or :inline." unless [:vertical, :horizontal, :inline].include?(options[:layout])
         options[:default_toggle_style] = :stacked
         if options[:layout] == :horizontal
-          options[:default_div_class] ||= 'col-lg-10'
-          options[:default_label_class] ||= 'col-lg-2 control-label'
+          options[:default_div_class] ||= TwitterBootstrapFormFor::FormBuilder.div_class
+          options[:default_label_class] ||= TwitterBootstrapFormFor::FormBuilder.label_class
         end
         if options[:html].nil?
           options[:html] = {:role => 'form'}

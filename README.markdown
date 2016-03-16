@@ -42,9 +42,14 @@ Formtastic does), it only lightly wraps the existing Rails form tag helpers.
     / a field with a custom label
     = user.password_field :password_confirmation, 'Confirm Password'
 
-    / input fields with custom add-ons
+    / input fields with custom add-ons, append by default
+    = user.text_field :twitter_id, 'Twitter', :class => 'medium' do
+      %span.add-on @
     = user.text_field :twitter_id, 'Twitter', :class => 'medium', :add_on => :prepend do
       %span.add-on @
+
+    / input fields with input-group
+    = user.text_field :twitter_id, 'Twitter', :class => 'medium', :input-group => '€'
 
     / select fields now have the second parameter as a label
     = user.date_select :born_on, 'Born on', {}, :class => 'small'
@@ -88,6 +93,17 @@ simple:
   * the second parameter becomes the label (pass false to disable, nil for default)
   * the last options hash accepts an `:add_on` key
   * if a block is passed, the HTML it outputs is placed immediately after the input
+
+## Configuration ##
+
+Default class applied on label and div can be customized. Setup a file `config/initializers/twitter_bootstrap_form_for.rb` e.g.:
+
+```ruby
+TwitterBootstrapFormFor::FormBuilder.label_class = 'col-md-2 control-label'
+TwitterBootstrapFormFor::FormBuilder.div_class = 'col-md-6'
+TwitterBootstrapFormFor::FormBuilder.div_labelless_class = 'col-md-offset-2 col-md-6'
+TwitterBootstrapFormFor::FormBuilder.action_class = 'col-md-offset-2 col-md-6'
+```
 
 ## Known Bugs ##
 
