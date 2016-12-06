@@ -92,6 +92,24 @@ class TwitterBootstrapFormFor::FormBuilder < ActionView::Helpers::FormBuilder
     }.merge(options)
   end
 
+  #
+  # Renders a text field with the current locale's currency unit as a
+  # prepended add-on.
+  #
+  def price_field(attribute, *args)
+    options = args.extract_options!
+    options[:add_on] ||= :prepend
+    options[:value]  ||= template.number_with_precision(
+                            object.read_attribute(attribute),
+                            :precision => 2) || 0
+
+    text_field(attribute, *(args << options)) do
+      template.concat template.content_tag(:span,
+                           I18n.t('number.currency.format.unit').html_safe,
+                           :class => 'add-on')
+    end
+  end
+
   INPUTS.each do |input|
     define_method input do |attribute, *args, &block|
       options = args.extract_options!
